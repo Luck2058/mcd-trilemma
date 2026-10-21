@@ -34,13 +34,14 @@ def near(a: float, b: float, tol: float = 0.02) -> bool:
 
 def main() -> int:
     menu, coupons, _ = T.load_sample()
+    nut = T.NutritionIndex.load_sample()
     cfg = dict(T.DEFAULTS)
 
     def pricer(custom: dict | None = None):
         c = dict(cfg)
         if custom:
             c.update(custom)
-        return T.MockPricer(menu, coupons, c)
+        return T.MockPricer(menu, coupons, c, nut)
 
     # ---- 1. 价格基础 -------------------------------------------------
     p = pricer()
@@ -135,6 +136,36 @@ def main() -> int:
     bare = T.MockPricer(menu, [], cfg).quote("pickup", [{"code": "BURGER_MCHICKEN", "qty": 1}])
     check("无可用券时到手价 = 商品金额", near(bare.payable, 25.0) and near(bare.payable, bare.payable_no_coupon), "")
     check("无券时券字段为空", bare.coupon_id == "" and near(bare.coupon_discount, 0.0), "")
+
+    # ---- 13. 营养数据匹配 ----------------------------------------------
+    check("本地营养快照不少于 100 项", len(nut.rows) >= 100, str(len(nut.rows)))
+    exact = nut.lookup("麦辣鸡腿汉堡")
+    check("精确匹配麦辣鸡腿汉堡 485 kcal", exact["match"] == "exact" and near(exact["kcal"], 485, 1), str(exact))
+    approx = nut.lookup("薯条")
+    check(
+        "「薯条」模糊匹配到中薯条（289 kcal）",
+        approx["match"] == "approx" and approx["matched"] == "中薯条" and near(approx["kcal"], 289, 1),
+        str(approx),
+    )
+    miss = nut.lookup("不存在的神秘汉堡")
+    check("未匹配返回 none，且热量为 None 而非 0", miss["match"] == "none" and miss["kcal"] is None, str(miss))
+
+    # ---- 14. 热量账 ----------------------------------------------------
+    check("到店这单摄入 485 + 289 = 774 kcal", near(pick.kcal, 774, 2), f"实际 {pick.kcal}")
+    check("到店步行往返 16 分钟消耗 56 kcal", near(pick.burned_kcal, 56, 1), f"实际 {pick.burned_kcal}")
+    check("外送全程不消耗热量", near(q.burned_kcal, 0.0), f"实际 {q.burned_kcal}")
+    check("得来速开车不消耗热量", near(dt.burned_kcal, 0.0), f"实际 {dt.burned_kcal}")
+    check("净热量 = 摄入 − 消耗", near(pick.net_kcal, pick.kcal - pick.burned_kcal, 0.2), "")
+    check("净热量不低于零", pick.net_kcal >= 0, "")
+
+    # ---- 15. 体重影响消耗 ----------------------------------------------
+    heavy = T.MockPricer(menu, coupons, {**cfg, "weight_kg": 90.0}, nut).quote(
+        "pickup", [{"code": "BURGER_MCHICKEN", "qty": 1}, {"code": "SIDE_FRIES_M", "qty": 1}]
+    )
+    check("体重越大同样走路消耗越多", heavy.burned_kcal > pick.burned_kcal, f"{heavy.burned_kcal} vs {pick.burned_kcal}")
+
+    # ---- 16. 凑单热量代价 ----------------------------------------------
+    check("凑单提示带上加购品热量", topup is not None and topup.get("addKcal"), str(topup.get("addKcal")))
 
     # ---- 汇总 ---------------------------------------------------------
     total = len(PASSED) + len(FAILED)

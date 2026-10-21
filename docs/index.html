@@ -175,6 +175,7 @@
       外送、到店取餐、得来速——三种履约方式的到手价本来就不同：配送费、免配送门槛、
       各自独立的券池。本工具把三条路都核一遍价，再用 <strong>「临界时薪」</strong>
       把价差折算成时间成本，回答那句真正纠结的话：<strong>我到底要不要下楼。</strong>
+      顺手把第三笔账也算了：<strong>走过去能消耗多少热量，坐着等又留下多少。</strong>
     </p>
   </header>
 
@@ -205,6 +206,10 @@
             <label>到店排队 <b id="v-queue">5 分钟</b></label>
             <input type="range" id="queue" min="0" max="20" step="1" value="5">
           </div>
+          <div class="slider">
+            <label>体重（折算步行消耗） <b id="v-weight">60 kg</b></label>
+            <input type="range" id="weight" min="40" max="110" step="1" value="60">
+          </div>
         </div>
       </aside>
 
@@ -227,6 +232,11 @@
         <div class="card" style="margin-top:16px">
           <h2>明细</h2>
           <div id="table"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px" id="nutricard">
+          <h2>热量账：钱之外的第二笔支出</h2>
+          <div id="nutri"></div>
         </div>
 
         <div class="card" style="margin-top:16px" id="topupcard">
@@ -255,6 +265,11 @@
         <b>帕累托前沿</b>是在「更便宜」和「更省时间」两个目标下谁都不服的路线。
         落在前沿外的路线，无论你的时薪是多少都不可能是最优解——可以直接从选项里划掉。
       </p>
+      <p>
+        <b>净热量</b>是第三条轴。三条路的餐是同一份，摄入一样，但<u>走过去会消耗，坐着等不会</u>——
+        按慢走 3.5 MET 折算：<code>消耗 = 3.5 × 体重(kg) × 步行小时</code>，排队时间不算走路。
+        外送和开车去车道都按零消耗算。这里只做「摄入 vs 消耗」的收支对照，不是营养建议。
+      </p>
       <div class="disclaim">
         本页使用<b>脱敏样例数据</b>演示算法（菜单价格与券面为合理近似，不代表麦当劳官方报价）。
         正式使用请通过麦当劳 MCP 的 <code>calculate-price</code> 实时核价，见仓库
@@ -273,15 +288,15 @@
 
 /* ============================== 数据 ============================== */
 const MENU = [
-  {code:"BURGER_MCHICKEN", name:"麦辣鸡腿堡",       price:25.0, note:"招牌辣堡"},
-  {code:"BURGER_BIGMAC",   name:"巨无霸",           price:25.5, note:"经典"},
-  {code:"SIDE_FRIES_M",    name:"中薯条",           price:11.5, note:""},
-  {code:"DRINK_COKE_M",    name:"可口可乐（中）",   price:9.0,  note:""},
-  {code:"SIDE_NUGGETS_5",  name:"麦乐鸡（5块）",    price:13.0, note:""},
-  {code:"DESSERT_PIE",     name:"香芋派",           price:8.0,  note:"最便宜的凑单品"},
-  {code:"SIDE_WINGS_2",    name:"麦辣鸡翅（2块）",  price:13.5, note:""},
-  {code:"DESSERT_MCFLURRY",name:"麦旋风",           price:12.5, note:""},
-  {code:"COMBO_BIGMAC",    name:"巨无霸套餐（中）", price:36.5, note:"含中薯+中可"}
+  {code:"BURGER_MCHICKEN", name:"麦辣鸡腿堡",       price:25.0, kcal:485, note:"招牌辣堡"},
+  {code:"BURGER_BIGMAC",   name:"巨无霸",           price:25.5, kcal:513, note:"经典"},
+  {code:"SIDE_FRIES_M",    name:"中薯条",           price:11.5, kcal:289, note:""},
+  {code:"DRINK_COKE_M",    name:"可口可乐（中）",   price:9.0,  kcal:147, note:""},
+  {code:"SIDE_NUGGETS_5",  name:"麦乐鸡（5块）",    price:13.0, kcal:213, note:""},
+  {code:"DESSERT_PIE",     name:"香芋派",           price:8.0,  kcal:232, note:"最便宜的凑单品"},
+  {code:"SIDE_WINGS_2",    name:"麦辣鸡翅（2块）",  price:13.5, kcal:224, note:""},
+  {code:"DESSERT_MCFLURRY",name:"麦旋风",           price:12.5, kcal:266, note:""},
+  {code:"COMBO_BIGMAC",    name:"巨无霸套餐（中）", price:36.5, kcal:949, note:"含中薯+中可，热量为三项加总"}
 ];
 
 const COUPONS = [
@@ -302,7 +317,8 @@ const CFG = {
   freeDeliveryAt: 39,
   minOrder: 20,
   packingFee: 0,
-  deliveryEta: 32
+  deliveryEta: 32,
+  walkMet: 3.5          // 慢走代谢当量，4.5 km/h
 };
 
 const state = {
@@ -310,7 +326,8 @@ const state = {
   wage: 45,
   walk: 8,
   drive: 6,
-  queue: 5
+  queue: 5,
+  weight: 60
 };
 
 const yuan = n => "¥" + n.toFixed(2);
@@ -355,9 +372,17 @@ function bestCoupon(channel, total, fee){
   return best;
 }
 
+function cartKcal(cart){
+  return Object.entries(cart).reduce((sum,[code,qty])=>{
+    const it = MENU.find(m => m.code === code);
+    return sum + (it ? it.kcal * qty : 0);
+  }, 0);
+}
+
 function quote(channel, cart){
   const total = itemsTotal(cart);
-  const q = {channel, available:true, reason:"", total, fee:0, payable:0, saving:0, coupon:null, active:0};
+  const q = {channel, available:true, reason:"", total, fee:0, payable:0, saving:0,
+             coupon:null, active:0, kcal:cartKcal(cart), burned:0, net:0};
   if(total <= 0){ q.available = false; q.reason = "还没选东西"; return q; }
 
   if(channel === "delivery"){
@@ -377,6 +402,11 @@ function quote(channel, cart){
   if(channel === "delivery"){ q.active = 0; }
   else if(channel === "pickup"){ q.active = state.walk * 2 + state.queue; }
   else { q.active = state.drive * 2 + state.queue; }
+
+  // 只有「走过去」才消耗热量；开车去车道和在家等，消耗一样
+  const walkMin = channel === "pickup" ? Math.max(0, q.active - state.queue) : 0;
+  q.burned = Math.round(CFG.walkMet * state.weight * walkMin / 60);
+  q.net = q.kcal - q.burned;
 
   return q;
 }
@@ -459,8 +489,8 @@ function renderChans(quotes, rec){
         <dt>你要花的时间</dt><dd class="${q.active===0?'hl':''}">${q.active===0?"0（在家等）":q.active+" 分钟"}</dd>
         <dt>综合成本</dt><dd class="${win?'hl':''}">${cost(q, state.wage).toFixed(2)}</dd>
         <dt>用券</dt><dd>${q.coupon?q.coupon.title:"无券"}</dd>
-        <dt>券省下</dt><dd>${q.saving>0?yuan(q.saving):"—"}</dd>
         <dt>配送费</dt><dd>${q.fee>0?yuan(q.fee):"—"}</dd>
+        <dt>净热量</dt><dd class="${q.burned>0?'hl':''}">${q.burned>0 ? q.net+" <span style='font-weight:400;color:#9C938D'>（−"+q.burned+"）</span>" : q.kcal} kcal</dd>
       </dl>
     </div>`;
   }).join("");
@@ -468,7 +498,7 @@ function renderChans(quotes, rec){
 
 function renderTable(quotes, rec){
   const rows = quotes.map(q=>{
-    if(!q.available) return `<tr><td>${LABEL[q.channel]}</td><td colspan="5" style="text-align:left;color:#9C938D">${q.reason}</td></tr>`;
+    if(!q.available) return `<tr><td>${LABEL[q.channel]}</td><td colspan="7" style="text-align:left;color:#9C938D">${q.reason}</td></tr>`;
     return `<tr>
       <td class="${q.channel===rec?'win':''}">${LABEL[q.channel]}${q.channel===rec?" ★":""}</td>
       <td>${yuan(q.total)}</td>
@@ -476,13 +506,40 @@ function renderTable(quotes, rec){
       <td>${q.saving>0?"−"+yuan(q.saving).slice(1):"—"}</td>
       <td class="${q.channel===rec?'win':''}">${yuan(q.payable)}</td>
       <td>${q.active===0?"0":q.active} 分</td>
+      <td>${q.kcal}</td>
+      <td class="${q.burned>0?'win':''}">${q.burned>0?q.kcal+" − "+q.burned+" = "+q.net:q.net}</td>
     </tr>`;
   }).join("");
   document.getElementById("table").innerHTML = `
     <table>
-      <thead><tr><th>履约方式</th><th>商品金额</th><th>配送费</th><th>券抵扣</th><th>到手价</th><th>主动时间</th></tr></thead>
+      <thead><tr><th>履约方式</th><th>商品金额</th><th>配送费</th><th>券抵扣</th><th>到手价</th><th>主动时间</th><th>摄入</th><th>净热量</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
+}
+
+function renderNutrition(quotes){
+  const box = document.getElementById("nutri");
+  const usable = quotes.filter(q=>q.available);
+  if(!usable.length){
+    box.innerHTML = `<p style="font-size:13px;color:#9C938D">先选点什么。</p>`;
+    return;
+  }
+  const intake = usable[0].kcal;
+  const pickup = usable.find(q=>q.channel === "pickup");
+  let html = `<p style="font-size:13px;color:#6B625C;line-height:1.75">
+    这单摄入约 <b>${intake} 大卡</b>。三条路的餐是同一份，热量当然一样——
+    但<b>走过去会消耗，坐着等不会</b>。</p>`;
+  if(pickup && pickup.burned > 0){
+    const share = Math.round(pickup.burned / intake * 100);
+    html += `<p style="font-size:13px;color:#6B625C;line-height:1.75;margin-top:8px">
+      走去 <b>到店取餐</b> 往返 ${pickup.active} 分钟，按 ${state.weight} kg 估算消耗
+      <b style="color:#DA291C">${pickup.burned} 大卡</b>，净摄入降到 <b>${pickup.net} 大卡</b>
+      —— 抵掉这单的 ${share}%。</p>`;
+  }
+  html += `<p style="font-size:12px;color:#9C938D;line-height:1.65;margin-top:10px">
+    外送和得来速全程坐着，净摄入等于摄入量。热量取自麦当劳官方营养数据，套餐为各组成项加总估算。
+    这里只做「摄入 vs 消耗」的收支对照，不构成营养或医疗建议。</p>`;
+  box.innerHTML = html;
 }
 
 function renderTopup(cart){
@@ -519,7 +576,8 @@ function renderTopup(cart){
   box.innerHTML = `<p style="font-size:13px;color:#6B625C;line-height:1.7">
     当前这单 ${yuan(base.total)}，差 <b>${yuan(gap)}</b> 够不到 ${yuan(CFG.freeDeliveryAt)} 免配送门槛，所以被收了 <b>${yuan(base.fee)}</b> 配送费。<br>
     再加一份 <b>${cheapest.name}</b>（原价 ${money(cheapest.price)}）后，到手价 ${yuan(base.payable)} → <b>${yuan(after.payable)}</b>，
-    ${verdict}
+    ${verdict}<br>
+    <span style="color:#9C938D">代价是多摄入 <b>${cheapest.kcal} 大卡</b>。</span>
   </p>`;
 }
 
@@ -608,6 +666,7 @@ function render(){
   renderChans(quotes, rec);
   renderTable(quotes, rec);
   renderChart(quotes);
+  renderNutrition(quotes);
   renderTopup(state.cart);
 }
 
@@ -629,6 +688,7 @@ bindSlider("wage", "wage", v=>"¥"+v+"/h");
 bindSlider("walk", "walk", v=>v+" 分钟");
 bindSlider("drive", "drive", v=>v+" 分钟");
 bindSlider("queue", "queue", v=>v+" 分钟");
+bindSlider("weight", "weight", v=>v+" kg");
 
 render();
 </script>

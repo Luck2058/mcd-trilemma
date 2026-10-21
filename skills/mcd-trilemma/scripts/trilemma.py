@@ -33,6 +33,8 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any
 
+from nutrition import NutritionIndex
+
 HERE = Path(__file__).resolve().parent
 SAMPLE_DIR = HERE / "sample_data"
 
@@ -54,7 +56,11 @@ DEFAULTS = {
     "drive_minutes": 6,           # 单程车程
     "queue_minutes": 5,           # 到店/车道排队
     "wage_per_hour": 45.0,        # 用户时薪（元/小时）
+    "weight_kg": 60.0,            # 体重，用于把步行时间折算成热量消耗
 }
+
+# 步行代谢当量：4.5 km/h 慢走约 3.5 MET
+WALK_MET = 3.5
 
 
 # --------------------------------------------------------------------- 数据模型
@@ -96,11 +102,20 @@ class Quote:
     payable_no_coupon: float = 0.0
     active_minutes: float = 0.0     # 你必须亲自花掉的时间
     total_minutes: float = 0.0      # 从下单到吃上
+    kcal: float = 0.0               # 摄入热量（大卡）
+    kcal_matched: int = 0           # 成功匹配到营养数据的餐品数
+    kcal_missing: list[str] = field(default_factory=list)  # 未匹配到的餐品名
+    burned_kcal: float = 0.0        # 步行消耗（只有到店取餐才有）
     detail: dict[str, Any] = field(default_factory=dict)
 
     def cost(self, wage_per_hour: float) -> float:
         """综合成本 = 到手价 + 主动时间的机会成本。"""
         return round(self.payable + self.active_minutes / 60.0 * wage_per_hour, 2)
+
+    @property
+    def net_kcal(self) -> float:
+        """净热量 = 摄入 − 步行消耗。外送与得来速不消耗，净热量等于摄入。"""
+        return round(self.kcal - self.burned_kcal, 1)
 
 
 # --------------------------------------------------------------------- 工具函数
@@ -161,6 +176,39 @@ def load_json(path: Path) -> dict:
         return json.load(fh)
 
 
+# ------------------------------------------------------------------ 热量账
+
+
+def apply_nutrition(q: Quote, lines: list[tuple[str, int]], index, cfg: dict) -> None:
+    """把「摄入 − 步行消耗 = 净热量」写进 quote。
+
+    这是三路之间真实存在的第三个差异：同样一份餐，热量相同，
+    但**走过去会消耗、坐在家里等不会**。开车去得来速也不消耗。
+    """
+    intake = 0.0
+    matched = 0
+    missing: list[str] = []
+    for name, qty in lines:
+        info = index.lookup(name) if index is not None else {"kcal": None, "match": "none"}
+        if info.get("kcal") is None:
+            missing.append(name)
+            continue
+        intake += info["kcal"] * qty
+        matched += 1
+
+    q.kcal = round(intake, 1)
+    q.kcal_matched = matched
+    q.kcal_missing = missing
+
+    walk_minutes = 0.0
+    if q.channel == "pickup":
+        # active_minutes 里含排队，排队不算走路
+        walk_minutes = max(0.0, q.active_minutes - cfg["queue_minutes"])
+    elif q.channel == "drivethru":
+        walk_minutes = 0.0  # 开车，热量消耗与在家等无差别
+    q.burned_kcal = round(WALK_MET * cfg["weight_kg"] * walk_minutes / 60.0, 1)
+
+
 # ------------------------------------------------------------------ 离线核价器
 
 
@@ -173,10 +221,11 @@ class MockPricer:
       3. 各场景的门店覆盖不同（得来速门店最少）。
     """
 
-    def __init__(self, menu: dict[str, MenuItem], coupons: list[Coupon], cfg: dict):
+    def __init__(self, menu: dict[str, MenuItem], coupons: list[Coupon], cfg: dict, nutrition=None):
         self.menu = menu
         self.coupons = coupons
         self.cfg = cfg
+        self.nutrition = nutrition
 
     # -- 券的适用性判断 ------------------------------------------------
     @staticmethod
@@ -273,6 +322,13 @@ class MockPricer:
         else:
             q.active_minutes = float(cfg["drive_minutes"] * 2 + cfg["queue_minutes"])
             q.total_minutes = q.active_minutes
+
+        apply_nutrition(
+            q,
+            [(self.menu[c["code"]].name, c["qty"]) for c in cart],
+            self.nutrition,
+            cfg,
+        )
         return q
 
 
@@ -325,6 +381,7 @@ class LivePricer:
         self._coupon_cache: dict[str, list] = {}
         self.distance: dict[str, float] = {}
         self.trace: list[dict] = []
+        self._nutrition = None
 
     # -- 底层调用 ------------------------------------------------------
     def _call(self, name: str, args: dict) -> dict:
@@ -479,6 +536,16 @@ class LivePricer:
             resolved.append({"code": hits[0], "qty": line["qty"]})
         return resolved, missing
 
+    # -- 营养 ---------------------------------------------------------
+    def _nutrition_index(self):
+        """营养库只在第一次需要时拉一次；失败则退回本地快照。"""
+        if self._nutrition is None:
+            try:
+                self._nutrition = NutritionIndex.from_mcp(self.client)
+            except Exception:  # noqa: BLE001 - 营养是增强项，不该拖垮比价
+                self._nutrition = NutritionIndex.load_sample()
+        return self._nutrition
+
     def quote(self, channel: str, cart: list[dict]) -> Quote:
         q = Quote(channel=channel)
         try:
@@ -536,6 +603,13 @@ class LivePricer:
         else:
             q.active_minutes = float(self.cfg["drive_minutes"] * 2 + self.cfg["queue_minutes"])
             q.total_minutes = q.active_minutes
+
+        apply_nutrition(
+            q,
+            [(menu[r["code"]]["name"], r["qty"]) for r in resolved],
+            self._nutrition_index(),
+            self.cfg,
+        )
         return q
 
 
@@ -600,10 +674,12 @@ def suggest_topup(pricer: MockPricer, cart: list[dict], channel: str = "delivery
     # 因为跨过门槛会免掉配送费，这个数常常远低于商品原价。
     marginal = round(after.payable - base.payable, 2)
     discounted = marginal > 0.01 and marginal < cheapest.price - 0.01
+    info = pricer.nutrition.lookup(cheapest.name) if pricer.nutrition else {"kcal": None}
     return {
         "addCode": cheapest.code,
         "addName": cheapest.name,
         "addPrice": cheapest.price,
+        "addKcal": info.get("kcal"),
         "gapBefore": round(gap, 2),
         "payableBefore": base.payable,
         "payableAfter": after.payable,
@@ -628,18 +704,27 @@ def render_markdown(result: dict) -> str:
             continue
         coupon = q["couponTitle"] or "无券"
         star = " ⭐" if ch == result["recommended"] else ""
+        if not q["kcalMatched"] and not q["kcal"]:
+            kcal_cell = "未匹配"
+        elif q["burnedKcal"] > 0:
+            kcal_cell = (
+                f"{q['kcal']:.0f} − {q['burnedKcal']:.0f} = **{q['netKcal']:.0f}**"
+            )
+        else:
+            kcal_cell = f"{q['kcal']:.0f}"
         rows.append(
             f"| {label}{star} | ¥{q['payable']:.2f} | {q['activeMinutes']:.0f} 分钟 | "
-            f"¥{q['cost']:.2f} | {coupon} | ¥{q['couponDiscount']:.2f} |"
+            f"¥{q['cost']:.2f} | {kcal_cell} | {coupon} |"
         )
 
     lines = [
         "### 三路到手价对比",
         "",
-        f"> 假设你的时间价值 **¥{wage:.0f}/小时**，综合成本 = 到手价 + 主动时间的机会成本",
+        f"> 假设你的时间价值 **¥{wage:.0f}/小时**，体重 {result['nutrition']['weightKg']:.0f} kg；"
+        "综合成本 = 到手价 + 主动时间的机会成本",
         "",
-        "| 履约方式 | 到手价 | 你要花的时间 | 综合成本 | 用券 | 省下 |",
-        "|---|---:|---:|---:|---|---:|",
+        "| 履约方式 | 到手价 | 你要花的时间 | 综合成本 | 净热量(kcal) | 用券 |",
+        "|---|---:|---:|---:|---:|---|",
         *rows,
         "",
     ]
@@ -670,14 +755,43 @@ def render_markdown(result: dict) -> str:
             )
         else:
             verdict = f"但要多付 ¥{topup['marginalCost']:.2f}，等于按原价买，没必要凑"
+        kcal_note = ""
+        if topup.get("addKcal"):
+            kcal_note = f"代价是多摄入 **{topup['addKcal']:.0f} 大卡**。"
         lines += [
             "### 凑单提示",
             "",
             f"你的外送单还差 **¥{topup['gapBefore']:.2f}** 到免配送门槛（当前被收 ¥9 配送费）。"
             f"再加一份 **{topup['addName']}（原价 ¥{topup['addPrice']:.2f}）** 后，"
-            f"到手价 ¥{topup['payableBefore']:.2f} → ¥{topup['payableAfter']:.2f}，{verdict}。",
+            f"到手价 ¥{topup['payableBefore']:.2f} → ¥{topup['payableAfter']:.2f}，{verdict}。{kcal_note}",
             "",
         ]
+
+    nutrition = result["nutrition"]
+    if nutrition["intake"]:
+        lines += ["### 热量账：钱之外的第二笔支出", ""]
+        lines.append(
+            f"这单摄入约 **{nutrition['intake']:.0f} 大卡**"
+            f"（{nutrition['matched']}/{nutrition['total']} 项匹配到官方营养数据）。"
+        )
+        for q in result["quotes"]:
+            if not q["available"] or q["burnedKcal"] <= 0:
+                continue
+            share = q["burnedKcal"] / nutrition["intake"] * 100
+            lines.append(
+                f"- 走去 **{CHANNEL_LABEL[q['channel']]}** 往返约 {q['activeMinutes']:.0f} 分钟，"
+                f"按 {nutrition['weightKg']:.0f} kg 体重估算消耗 **{q['burnedKcal']:.0f} 大卡**，"
+                f"净摄入降到 **{q['netKcal']:.0f} 大卡**（抵掉这单的 {share:.0f}%）。"
+            )
+        lines.append(
+            "- 外送和得来速全程坐着，净摄入就等于摄入量——**路省了，这笔热量也一并留下了**。"
+        )
+        if nutrition["missing"]:
+            lines.append(
+                f"- 未匹配到营养数据：{'、'.join(nutrition['missing'])}"
+                "（不按 0 计，如实标注，避免热量被低估）。"
+            )
+        lines.append("")
 
     lines += [
         f"**帕累托前沿**：{', '.join(CHANNEL_LABEL[c] for c in result['pareto']) or '无'} "
@@ -710,6 +824,8 @@ def build_config(request: dict) -> dict:
     cfg["auto_walk"] = ful.get("walkMinutes") is None
     if request.get("wagePerHour") is not None:
         cfg["wage_per_hour"] = _num(request["wagePerHour"], cfg["wage_per_hour"])
+    if request.get("weightKg") is not None:
+        cfg["weight_kg"] = _num(request["weightKg"], cfg["weight_kg"])
     return cfg
 
 
@@ -749,7 +865,8 @@ def run(request: dict, mode: str = "offline", city: str = "", keyword: str = "�
 
     if mode == "offline":
         menu, coupons, _ = load_sample()
-        pricer = MockPricer(menu, coupons, cfg)
+        nutrition = NutritionIndex.load_sample()
+        pricer = MockPricer(menu, coupons, cfg, nutrition)
         quotes = [pricer.quote(ch, cart) for ch in CHANNELS]
         topup = suggest_topup(pricer, cart)
         source = "脱敏样例数据（offline）"
@@ -804,6 +921,13 @@ def run(request: dict, mode: str = "offline", city: str = "", keyword: str = "�
         "pareto": pareto_front(quotes),
         "breakevens": breakevens,
         "topup": topup,
+        "nutrition": {
+            "weightKg": cfg["weight_kg"],
+            "intake": next((q.kcal for q in valid), 0.0),
+            "matched": next((q.kcal_matched for q in valid), 0),
+            "total": sum(c["qty"] for c in cart),
+            "missing": sorted({m for q in valid for m in q.kcal_missing}),
+        },
         "quotes": [
             {
                 "channel": q.channel,
@@ -822,6 +946,11 @@ def run(request: dict, mode: str = "offline", city: str = "", keyword: str = "�
                 "activeMinutes": q.active_minutes,
                 "totalMinutes": q.total_minutes,
                 "cost": q.cost(cfg["wage_per_hour"]),
+                "kcal": q.kcal,
+                "burnedKcal": q.burned_kcal,
+                "netKcal": q.net_kcal,
+                "kcalMatched": q.kcal_matched,
+                "kcalMissing": q.kcal_missing,
             }
             for q in quotes
         ],
@@ -882,6 +1011,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--wage", type=float, default=None, help="你的时薪（元/小时）")
     parser.add_argument("--walk", type=float, default=None, help="单程步行分钟数")
     parser.add_argument("--drive", type=float, default=None, help="单程车程分钟数")
+    parser.add_argument("--weight", type=float, default=None, help="体重（kg），用于把步行折算成热量消耗")
     parser.add_argument("--city", default="", help="城市名，不带“市”，如 成都（live 模式必填）")
     parser.add_argument("--keyword", default="麦当劳", help="门店搜索关键词，如 四川农业大学")
     parser.add_argument("--search", default="", help="在门店菜单里按关键词搜餐品（只打印，不核价）")
@@ -908,6 +1038,8 @@ def main(argv: list[str] | None = None) -> int:
     request = load_json(Path(args.request))
     if args.wage is not None:
         request["wagePerHour"] = args.wage
+    if args.weight is not None:
+        request["weightKg"] = args.weight
     ful = request.setdefault("fulfillment", {})
     if args.walk is not None:
         ful["walkMinutes"] = args.walk
