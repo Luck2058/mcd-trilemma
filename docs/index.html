@@ -4,192 +4,230 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麦门三路比价器 · 临界时薪</title>
-<meta name="description" content="同一份麦当劳，外送 / 到店取餐 / 得来速三条路的真实到手价对比。用「临界时薪」把价差折算成时间成本，告诉你这一趟到底值不值得走。">
+<meta name="description" content="同一份麦当劳，外送 / 到店取餐 / 得来速三条路的真实到手价对比。用「临界时薪」把价差折算成时间成本，再算清净热量。">
 <style>
   :root{
     --red:#DA291C;
     --yellow:#FFC72C;
+    --amber:#E0A800;
     --ink:#1A1614;
     --ink-2:#6B625C;
     --ink-3:#9C938D;
+    --ink-4:#B8AFA9;
     --line:#EDE6DF;
+    --line-2:#F6F1EC;
     --bg:#FBF8F4;
     --card:#FFFFFF;
-    --radius:16px;
+    --r-card:16px;
+    --r-pill:20px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{-webkit-text-size-adjust:100%}
   body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-family:"Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
     background:var(--bg);color:var(--ink);line-height:1.6;
     -webkit-font-smoothing:antialiased;
+    font-variant-numeric:tabular-nums;
   }
-  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 24px}
 
-  /* ---------- header ---------- */
-  header{padding:56px 0 32px;border-bottom:1px solid var(--line)}
-  .eyebrow{
-    display:inline-flex;align-items:center;gap:8px;
-    font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
-    color:var(--red);margin-bottom:16px;
-  }
-  .eyebrow::before{content:"";width:22px;height:3px;background:var(--yellow);border-radius:2px}
-  h1{font-size:clamp(30px,5vw,46px);line-height:1.15;letter-spacing:-.02em;font-weight:800}
-  h1 em{font-style:normal;color:var(--red)}
-  .sub{margin-top:16px;font-size:16px;color:var(--ink-2);max-width:640px}
-  .sub strong{color:var(--ink);font-weight:600}
+  /* ---------- topbar ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:28px 0 0}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:26px;height:26px;border-radius:8px;background:var(--red)}
+  .brand span{font-size:14px;font-weight:700;letter-spacing:-.01em}
+  .topmeta{display:flex;align-items:center;gap:12px}
+  .topmeta .meta{font-size:12px;color:var(--ink-3)}
+  .pill{font-size:11px;font-weight:500;color:var(--red);background:#FDEDEA;border-radius:var(--r-pill);padding:6px 12px;white-space:nowrap}
+
+  /* ---------- hero ---------- */
+  header.hero{padding:52px 0 36px}
+  .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .eyebrow i{display:block;width:22px;height:3px;background:var(--yellow);border-radius:2px}
+  .eyebrow span{font-size:11.5px;font-weight:700;color:var(--red);letter-spacing:.16em}
+  h1{font-size:clamp(30px,4.4vw,46px);line-height:1.28;font-weight:800;letter-spacing:-.02em}
+  h1 em{font-style:normal;color:var(--red);display:block}
+  .sub{margin-top:16px;font-size:15px;color:var(--ink-2);line-height:1.8;max-width:720px}
 
   /* ---------- layout ---------- */
-  main{padding:32px 0 64px}
-  .grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
-  @media (max-width:860px){.grid{grid-template-columns:1fr}}
+  main{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start;padding-bottom:8px}
+  @media (max-width:900px){main{grid-template-columns:1fr}}
+  .col-l,.col-r{display:flex;flex-direction:column;gap:16px;min-width:0}
 
-  .card{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:20px;
-  }
-  .card + .card{margin-top:16px}
-  .card h2{
-    font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
-    color:var(--ink-3);margin-bottom:16px;
-  }
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:20px}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:0}
+  .card-h h2{font-size:11.5px;font-weight:700;color:var(--ink-3);letter-spacing:.12em}
+  .card-h .hint{font-size:11px;color:var(--ink-4)}
+  .card-h .hint.on{color:var(--red);font-weight:500}
 
-  /* ---------- menu picker ---------- */
-  .item{
-    display:flex;align-items:center;gap:10px;padding:8px 0;
-    border-bottom:1px solid #F6F1EC;
-  }
-  .item:last-child{border-bottom:none}
-  .item .nm{flex:1;font-size:14px;min-width:0}
-  .item .nm small{display:block;color:var(--ink-3);font-size:11px}
-  .item .pr{font-size:13px;color:var(--ink-2);font-variant-numeric:tabular-nums;white-space:nowrap}
-  .stepper{display:flex;align-items:center;gap:2px}
+  /* ---------- menu ---------- */
+  .item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2)}
+  .item:last-child{border-bottom:none;padding-bottom:0}
+  .thumb{width:40px;height:40px;border-radius:10px;object-fit:cover;flex:none;background:var(--line-2)}
+  .thumb.mono{display:grid;place-items:center;font-size:15px;color:var(--ink-4);font-weight:500}
+  .item .nm{flex:1;min-width:0;font-size:13.5px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .nm small{display:block;font-weight:400;font-size:10.5px;color:var(--ink-3);margin-top:2px}
+  .item.off .nm{color:var(--ink-2);font-weight:400}
+  .item.off .thumb{opacity:.55}
+  .item.off .nm small{color:var(--ink-4)}
+  .stepper{display:flex;align-items:center;gap:3px;flex:none}
   .stepper button{
-    width:24px;height:24px;border:1px solid var(--line);background:#fff;border-radius:7px;
-    color:var(--ink-2);font-size:15px;line-height:1;cursor:pointer;
-    display:grid;place-items:center;transition:.15s;
+    width:24px;height:24px;border:1px solid var(--line);background:#fff;border-radius:8px;
+    color:var(--ink-3);font-size:14px;line-height:1;cursor:pointer;
+    display:grid;place-items:center;transition:.15s;font-family:inherit;
   }
   .stepper button:hover:not(:disabled){border-color:var(--red);color:var(--red)}
   .stepper button:disabled{opacity:.3;cursor:default}
-  .stepper .q{width:22px;text-align:center;font-size:13px;font-variant-numeric:tabular-nums}
-  .stepper .q.on{color:var(--red);font-weight:700}
-  .item.out{opacity:.42}
+  .stepper .q{min-width:20px;text-align:center;font-size:12px;font-weight:600;color:var(--ink-4)}
+  .stepper .q.on{color:var(--red)}
 
   /* ---------- sliders ---------- */
-  .slider{margin-bottom:14px}
-  .slider:last-child{margin-bottom:0}
-  .slider label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;color:var(--ink-2)}
-  .slider label b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
-  input[type=range]{
-    -webkit-appearance:none;width:100%;height:4px;border-radius:4px;background:var(--line);outline:none;
-  }
+  .slider + .slider{margin-top:18px}
+  .slider label{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12.5px;color:var(--ink-2);margin-bottom:9px}
+  .slider label b{font-size:12.5px;font-weight:700;color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:var(--line);outline:none;display:block}
   input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--red);
-    border:3px solid #fff;box-shadow:0 1px 4px rgba(218,41,28,.35);cursor:pointer;
+    -webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;
+    border:3px solid var(--red);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12);
   }
   input[type=range]::-moz-range-thumb{
-    width:12px;height:12px;border-radius:50%;background:var(--red);
-    border:3px solid #fff;box-shadow:0 1px 4px rgba(218,41,28,.35);cursor:pointer;
+    width:8px;height:8px;border-radius:50%;background:#fff;border:3px solid var(--red);cursor:pointer;
   }
+  .footnote{margin-top:18px;font-size:11.5px;color:var(--ink-3);line-height:1.7}
+
+  /* ---------- meta rows ---------- */
+  .mrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-2)}
+  .mrow:last-child{border-bottom:none;padding-bottom:0}
+  .mrow span{font-size:11.5px;color:var(--ink-3)}
+  .mrow b{font-size:11.5px;font-weight:500;color:var(--ink)}
 
   /* ---------- verdict ---------- */
-  .verdict{
-    background:linear-gradient(135deg,#1A1614,#2C2320);color:#fff;border-radius:var(--radius);
-    padding:24px;position:relative;overflow:hidden;
-  }
-  .verdict::after{
-    content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;
-    background:radial-gradient(circle,rgba(255,199,44,.22),transparent 70%);
-  }
-  .verdict .tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--yellow);font-weight:700}
-  .verdict .big{font-size:26px;font-weight:800;letter-spacing:-.01em;margin:8px 0 4px;line-height:1.25}
-  .verdict .big span{color:var(--yellow)}
-  .verdict p{font-size:13.5px;color:#C9C0BA;margin-top:10px;line-height:1.65}
+  .verdict{background:var(--ink);border-radius:20px;padding:28px 32px;color:#fff;position:relative;overflow:hidden}
+  .verdict .tag{font-size:10.5px;font-weight:700;color:var(--yellow);letter-spacing:.18em}
+  .verdict .big{margin-top:10px;font-size:clamp(26px,3.2vw,34px);font-weight:800;line-height:1.3;letter-spacing:-.01em}
+  .verdict .big em{font-style:normal;color:var(--yellow)}
+  .verdict .meta{margin-top:8px;font-size:13.5px;color:#E8E1DB;font-weight:500}
+  .verdict .meta i{font-style:normal;color:#8C827B;margin:0 8px}
+  .verdict .body{margin-top:12px;font-size:13px;color:#B0A69F;line-height:1.75;max-width:640px}
   .verdict .formula{
-    margin-top:16px;padding:10px 12px;background:rgba(255,255,255,.07);border-radius:10px;
-    font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#E8E1DB;
-    font-variant-numeric:tabular-nums;
+    margin-top:16px;padding:11px 14px;border-radius:10px;background:rgba(255,255,255,.07);
+    font-size:11.5px;color:#D7CFC9;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    overflow-x:auto;white-space:nowrap;
   }
 
   /* ---------- channel cards ---------- */
   .chans{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  @media (max-width:700px){.chans{grid-template-columns:1fr}}
-  .chan{
-    background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;
-    position:relative;transition:.2s;
-  }
-  .chan.win{border-color:var(--red);box-shadow:0 4px 20px rgba(218,41,28,.12)}
-  .chan.dead{opacity:.5;background:#FAF6F2}
-  .chan .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .chan .nm{font-size:13px;font-weight:700}
-  .chan .badge{
-    font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;
-    background:var(--red);color:#fff;letter-spacing:.04em;
-  }
-  .chan .price{font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
-  .chan .price small{font-size:14px;font-weight:600;color:var(--ink-3);margin-right:1px}
-  .chan dl{margin-top:12px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:12px}
-  .chan dt{color:var(--ink-3)}
-  .chan dd{text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
-  .chan dd.hl{color:var(--red);font-weight:700}
-  .chan .why{margin-top:10px;font-size:11.5px;color:var(--ink-3);line-height:1.5}
-
-  /* ---------- table ---------- */
-  table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:9px 8px;text-align:right;border-bottom:1px solid #F6F1EC;font-variant-numeric:tabular-nums}
-  th{font-size:11px;font-weight:600;color:var(--ink-3);text-transform:uppercase;letter-spacing:.05em}
-  th:first-child,td:first-child{text-align:left;font-variant-numeric:normal}
-  tr:last-child td{border-bottom:none}
-  td.win{font-weight:700;color:var(--red)}
+  @media (max-width:720px){.chans{grid-template-columns:1fr}}
+  .chan{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:18px;display:flex;flex-direction:column}
+  .chan.win{border-color:var(--red);box-shadow:0 6px 18px -2px rgba(218,41,28,.13)}
+  .chan.dead{background:#FAF6F2;opacity:.85}
+  .chan .ch{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:18px}
+  .chan .ch .nm{font-size:12.5px;font-weight:700}
+  .chan.dead .ch .nm{color:var(--ink-2)}
+  .badge{font-size:10px;font-weight:700;border-radius:var(--r-pill);padding:2px 7px;white-space:nowrap}
+  .badge.red{background:var(--red);color:#fff}
+  .badge.soft{background:#FDEDEA;color:var(--red)}
+  .badge.gray{background:var(--line-2);color:var(--ink-2)}
+  .chan .price{margin-top:2px;font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.35}
+  .chan .price small{font-size:15px;font-weight:700;color:var(--ink-3);margin-right:1px}
+  .chan .price.na{font-size:14px;font-weight:600;color:var(--ink-3)}
+  .chan .metrics{display:flex;gap:6px;margin-top:12px;padding-top:2px}
+  .chan .metrics > div{flex:1;min-width:0}
+  .chan .metrics dt{font-size:10px;color:var(--ink-3);white-space:nowrap}
+  .chan .metrics dd{margin-top:3px;font-size:12px;font-weight:700;white-space:nowrap}
+  .chan .metrics dd.hl{color:var(--red)}
+  .chan .why{margin-top:12px;font-size:11.5px;color:var(--ink-3);line-height:1.6}
 
   /* ---------- chart ---------- */
-  .chartbox{overflow:hidden}
-  svg{display:block;width:100%;height:auto}
-  .legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--ink-3)}
-  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .chart{display:block;width:100%;height:auto}
+  .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:12px;font-size:11px;color:var(--ink-2)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{width:9px;height:9px;border-radius:50%;display:block}
+  .chart-note{margin-top:12px;font-size:12px;color:var(--ink-2);line-height:1.7}
 
-  /* ---------- notes ---------- */
-  .notes{margin-top:32px;font-size:13px;color:var(--ink-2)}
-  .notes h3{font-size:14px;color:var(--ink);margin-bottom:10px;font-weight:700}
-  .notes p + p{margin-top:8px}
-  .notes code{
-    background:#F3EEE8;padding:1px 6px;border-radius:5px;font-size:12px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-  }
-  footer{
-    border-top:1px solid var(--line);padding:24px 0 48px;font-size:12px;color:var(--ink-3);
-  }
-  footer a{color:var(--ink-2)}
-  .disclaim{
-    background:#FFF8E6;border:1px solid #F6E2AE;border-radius:10px;
-    padding:10px 14px;font-size:12px;color:#7A5B10;margin-top:20px;line-height:1.6;
-  }
+  /* ---------- break-even ---------- */
+  .be{padding:16px 0 14px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .be:last-of-type{border-bottom:none;padding-bottom:16px}
+  .be .pair{font-size:12.5px;font-weight:500}
+  .be .detail{margin-top:5px;font-size:11.5px;color:var(--ink-3)}
+  .be .val{font-size:20px;font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+  .be .val.hl{color:var(--red)}
+  .scale{margin-top:4px}
+  .scale .track{position:relative;height:6px;border-radius:3px;background:var(--line)}
+  .scale .fill{position:absolute;left:0;top:0;height:6px;border-radius:3px;background:var(--red)}
+  .scale .mark{position:absolute;top:-5px;width:16px;height:16px;border-radius:50%;background:var(--ink);border:2.5px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transform:translateX(-8px)}
+  .scale .cap{margin-top:10px;font-size:10.5px;color:var(--ink-2);line-height:1.6}
+
+  /* ---------- nutrition ---------- */
+  .nrow{display:flex;align-items:center;gap:14px;padding-top:14px}
+  .nrow img{width:88px;height:88px;border-radius:12px;object-fit:cover;flex:none;background:var(--line-2)}
+  .nrow .mono-lg{width:88px;height:88px;border-radius:12px;flex:none;background:var(--line-2);display:grid;place-items:center;font-size:26px;font-weight:600;color:var(--ink-4)}
+  .nrow .info{flex:1;min-width:0}
+  .nrow .info strong{display:block;font-size:13.5px;font-weight:700}
+  .nrow .info span{display:block;margin-top:5px;font-size:11px;color:var(--ink-3)}
+  .nrow .k{text-align:right;flex:none}
+  .nrow .k b{display:block;font-size:20px;font-weight:800;line-height:1.2}
+  .nrow .k span{display:block;font-size:10.5px;color:var(--ink-3);margin-top:2px}
+  .macro-label{margin-top:18px;padding-top:18px;border-top:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink-4);letter-spacing:.1em}
+  .macro{display:flex;gap:8px;margin-top:10px}
+  .macro > div{flex:1;min-width:0}
+  .macro dt{font-size:10.5px;color:var(--ink-3)}
+  .macro dd{margin-top:3px;font-size:13px;font-weight:700}
+  .macro dd.over{color:var(--red)}
+
+  /* ---------- heat ---------- */
+  .lead{font-size:13px;color:var(--ink-2);line-height:1.75}
+  .accent{margin-top:12px;display:flex;gap:12px;align-items:center;background:var(--bg);border-radius:10px;padding:14px}
+  .accent i{width:3px;height:38px;background:var(--yellow);border-radius:2px;flex:none}
+  .accent p{font-size:12.5px;line-height:1.7}
+  .sub-note{margin-top:12px;font-size:11px;color:var(--ink-4);line-height:1.65}
+
+  /* ---------- topup ---------- */
+  .topup{background:#FFFBF0;border-color:#F5E4B8}
+  .topup .card-h h2{color:#9C7A1E}
+  .topup p{font-size:13px;color:#6B5A2A;line-height:1.75}
+  .topup .warn{margin-top:10px;font-size:12px;font-weight:500;color:#9C7A1E}
+
+  footer{border-top:1px solid var(--line);margin-top:32px;padding:24px 0 56px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3)}
+  footer .r{color:var(--ink-4)}
+
+  .empty{padding:16px 0;font-size:13px;color:var(--ink-3)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="eyebrow">麦当劳程序员创意开发大赛 · 参赛作品</div>
-    <h1>同一份麦当劳，<br>三条路的价差，<em>值不值得走</em>？</h1>
+
+  <div class="topbar">
+    <div class="brand"><div class="logo"></div><span>mcd-trilemma</span></div>
+    <div class="topmeta">
+      <div class="meta">麦当劳程序员创意开发大赛 · 参赛作品</div>
+      <div class="pill">在线试算 · 免登录</div>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow"><i></i><span>履约路线比价 · 临界时薪</span></div>
+    <h1>同一份麦当劳，三条路的价差，<em>值不值得走？</em></h1>
     <p class="sub">
-      外送、到店取餐、得来速——三种履约方式的到手价本来就不同：配送费、免配送门槛、
-      各自独立的券池。本工具把三条路都核一遍价，再用 <strong>「临界时薪」</strong>
-      把价差折算成时间成本，回答那句真正纠结的话：<strong>我到底要不要下楼。</strong>
-      顺手把第三笔账也算了：<strong>走过去能消耗多少热量，坐着等又留下多少。</strong>
+      外送、到店取餐、得来速——三种履约方式的到手价本来就不同：配送费、免配送门槛、各自独立的券池。
+      把三条路各核一次价，再用「临界时薪」把价差折算成时间成本，顺手算清净热量。
     </p>
   </header>
 
   <main>
-    <div class="grid">
-      <!-- ============ 左：参数 ============ -->
-      <aside>
-        <div class="card">
+    <!-- ============ 左栏 ============ -->
+    <div class="col-l">
+      <section class="card">
+        <div class="card-h">
           <h2>今天想吃</h2>
-          <div id="menu"></div>
+          <div class="hint on" id="cart-sum">—</div>
         </div>
+        <div id="menu" style="margin-top:14px"></div>
+      </section>
 
-        <div class="card">
-          <h2>你的参数</h2>
+      <section class="card">
+        <div class="card-h"><h2>你的参数</h2></div>
+        <div style="margin-top:18px">
           <div class="slider">
             <label>时薪（时间值多少钱） <b id="v-wage">¥45/h</b></label>
             <input type="range" id="wage" min="5" max="200" step="1" value="45">
@@ -199,87 +237,66 @@
             <input type="range" id="walk" min="1" max="30" step="1" value="8">
           </div>
           <div class="slider">
-            <label>到门店单程车程 <b id="v-drive">6 分钟</b></label>
-            <input type="range" id="drive" min="1" max="25" step="1" value="6">
+            <label>体重（折算步行消耗） <b id="v-weight">60 kg</b></label>
+            <input type="range" id="weight" min="40" max="110" step="1" value="60">
           </div>
           <div class="slider">
             <label>到店排队 <b id="v-queue">5 分钟</b></label>
             <input type="range" id="queue" min="0" max="20" step="1" value="5">
           </div>
-          <div class="slider">
-            <label>体重（折算步行消耗） <b id="v-weight">60 kg</b></label>
-            <input type="range" id="weight" min="40" max="110" step="1" value="60">
-          </div>
         </div>
-      </aside>
+        <p class="footnote">时薪决定结论。改一下这个数，推荐会翻转——这正是这个工具想让你看见的事。</p>
+      </section>
 
-      <!-- ============ 右：结果 ============ -->
-      <section>
-        <div class="verdict" id="verdict"></div>
-
-        <div class="chans" id="chans" style="margin-top:16px"></div>
-
-        <div class="card" style="margin-top:16px">
-          <h2>价格 × 时间：谁被支配了</h2>
-          <div class="chartbox" id="chart"></div>
-          <div class="legend">
-            <span><i style="background:#DA291C"></i>推荐路线</span>
-            <span><i style="background:#1A1614"></i>帕累托前沿</span>
-            <span><i style="background:#C9C0BA"></i>被支配（永远不是最优解）</span>
-          </div>
-        </div>
-
-        <div class="card" style="margin-top:16px">
-          <h2>明细</h2>
-          <div id="table"></div>
-        </div>
-
-        <div class="card" style="margin-top:16px" id="nutricard">
-          <h2>热量账：钱之外的第二笔支出</h2>
-          <div id="nutri"></div>
-        </div>
-
-        <div class="card" style="margin-top:16px" id="topupcard">
-          <h2>外送凑单：跨过免配送门槛划算吗</h2>
-          <div id="topup"></div>
+      <section class="card">
+        <div class="card-h"><h2>本次核价</h2><div class="hint">脱敏样例</div></div>
+        <div style="margin-top:4px">
+          <div class="mrow"><span>数据源</span><b>离线样例 · calculate-price</b></div>
+          <div class="mrow"><span>在售餐品</span><b id="m-count">—</b></div>
+          <div class="mrow"><span>可用券</span><b id="m-coupons">—</b></div>
         </div>
       </section>
     </div>
 
-    <div class="notes">
-      <h3>这套账是怎么算的</h3>
-      <p>
-        <b>到手价</b> = 商品金额 + 配送费 + 打包费 − 券的抵扣。三条路分别枚举自己的券池，
-        取让到手价最低的那张。券不能跨渠道套用——外送券到店核销不了，这正是三路差价的主要来源。
-      </p>
-      <p>
-        <b>时间成本</b>只算「你必须亲自花掉的时间」：外送是 0（等待时间可以并行干别的），
-        到店是往返步行 + 排队，得来速是往返车程 + 排队。所以
-        <code>综合成本 = 到手价 + 主动时间 ÷ 60 × 时薪</code>。
-      </p>
-      <p>
-        <b>临界时薪</b> = 便宜那条路省下的钱 × 60 ÷ 它多花的时间。你的时薪低于这个数，
-        走一趟就是赚的；高于它，省下的钱还不够补偿时间。
-      </p>
-      <p>
-        <b>帕累托前沿</b>是在「更便宜」和「更省时间」两个目标下谁都不服的路线。
-        落在前沿外的路线，无论你的时薪是多少都不可能是最优解——可以直接从选项里划掉。
-      </p>
-      <p>
-        <b>净热量</b>是第三条轴。三条路的餐是同一份，摄入一样，但<u>走过去会消耗，坐着等不会</u>——
-        按慢走 3.5 MET 折算：<code>消耗 = 3.5 × 体重(kg) × 步行小时</code>，排队时间不算走路。
-        外送和开车去车道都按零消耗算。这里只做「摄入 vs 消耗」的收支对照，不是营养建议。
-      </p>
-      <div class="disclaim">
-        本页使用<b>脱敏样例数据</b>演示算法（菜单价格与券面为合理近似，不代表麦当劳官方报价）。
-        正式使用请通过麦当劳 MCP 的 <code>calculate-price</code> 实时核价，见仓库
-        <code>skills/mcd-trilemma/scripts/</code>。本项目为参赛作品，非麦当劳官方产品。
-      </div>
+    <!-- ============ 右栏 ============ -->
+    <div class="col-r">
+      <section class="verdict" id="verdict"></section>
+
+      <div class="chans" id="chans"></div>
+
+      <section class="card">
+        <div class="card-h"><h2>价格 × 时间：谁被支配了</h2><div class="hint">越靠左下越好</div></div>
+        <div id="chart" style="margin-top:6px"></div>
+        <div class="legend" id="legend"></div>
+        <p class="chart-note" id="chart-note"></p>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>临界时薪</h2><div class="hint">低于它就走，高于它就别折腾</div></div>
+        <div id="be"></div>
+        <div id="scale"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>这一单的营养</h2><div class="hint">每份 · 麦当劳官方营养数据</div></div>
+        <div id="nutrition"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>热量账：钱之外的第二笔支出</h2><div class="hint">只看收支，不做建议</div></div>
+        <div id="heat" style="margin-top:12px"></div>
+      </section>
+
+      <section class="card topup" id="topup-card">
+        <div class="card-h"><h2>外送凑单：跨过免配送门槛划算吗</h2></div>
+        <div id="topup" style="margin-top:10px"></div>
+      </section>
     </div>
   </main>
 
   <footer>
-    麦门三路比价器 · mcd-trilemma ｜ 麦当劳程序员创意开发大赛参赛作品 ｜ MIT License
+    <div>麦门三路比价器 · mcd-trilemma · MIT</div>
+    <div class="r">配图为 AI 生成示意图，非官方产品照 · 营养数据来自麦当劳官方接口 · 页面数值为脱敏样例</div>
   </footer>
 </div>
 
@@ -287,47 +304,39 @@
 "use strict";
 
 /* ============================== 数据 ============================== */
+/* 营养值取自 MCP list-nutrition-foods（每份，官方数据）。套餐为组成项加总。 */
 const MENU = [
-  {code:"BURGER_MCHICKEN", name:"麦辣鸡腿堡",       price:25.0, kcal:485, note:"招牌辣堡"},
-  {code:"BURGER_BIGMAC",   name:"巨无霸",           price:25.5, kcal:513, note:"经典"},
-  {code:"SIDE_FRIES_M",    name:"中薯条",           price:11.5, kcal:289, note:""},
-  {code:"DRINK_COKE_M",    name:"可口可乐（中）",   price:9.0,  kcal:147, note:""},
-  {code:"SIDE_NUGGETS_5",  name:"麦乐鸡（5块）",    price:13.0, kcal:213, note:""},
-  {code:"DESSERT_PIE",     name:"香芋派",           price:8.0,  kcal:232, note:"最便宜的凑单品"},
-  {code:"SIDE_WINGS_2",    name:"麦辣鸡翅（2块）",  price:13.5, kcal:224, note:""},
-  {code:"DESSERT_MCFLURRY",name:"麦旋风",           price:12.5, kcal:266, note:""},
-  {code:"COMBO_BIGMAC",    name:"巨无霸套餐（中）", price:36.5, kcal:949, note:"含中薯+中可，热量为三项加总"}
+  {code:"BURGER_MCHICKEN", name:"麦辣鸡腿汉堡", price:25.0, kcal:485, p:24, f:24, c:42, na:1208, img:"img/burger.jpg"},
+  {code:"BURGER_BIGMAC",   name:"巨无霸",       price:25.5, kcal:513, p:27, f:26, c:42, na:961,  img:"img/bigmac.jpg"},
+  {code:"SIDE_FRIES_M",    name:"中薯条",       price:11.5, kcal:289, p:4,  f:12, c:38, na:165,  img:"img/fries.jpg"},
+  {code:"DRINK_COKE_M",    name:"可口可乐（中）", price:9.0, kcal:147, p:0,  f:0,  c:36, na:0,    img:""},
+  {code:"SIDE_NUGGETS_5",  name:"麦乐鸡（5块）", price:13.0, kcal:213, p:12, f:12, c:13, na:422,  img:""},
+  {code:"DESSERT_PIE",     name:"香芋派",       price:8.0,  kcal:232, p:2,  f:12, c:28, na:159,  img:"img/pie.jpg"},
+  {code:"SIDE_WINGS_2",    name:"麦辣鸡翅（2块）", price:13.5, kcal:224, p:13, f:15, c:9,  na:537,  img:""},
+  {code:"DESSERT_MCFLURRY",name:"麦旋风",       price:12.5, kcal:266, p:5,  f:9,  c:40, na:116,  img:""},
+  {code:"COMBO_BIGMAC",    name:"巨无霸套餐（中）", price:36.5, kcal:949, p:31, f:38, c:116, na:1126, img:""}
 ];
 
 const COUPONS = [
   {id:"CP_DLV_49_10",  title:"外送满 49 减 10", type:"full", channels:["delivery"],  threshold:49, amount:10},
   {id:"CP_PICK_30_8",  title:"到店满 30 减 8",  type:"full", channels:["pickup"],    threshold:30, amount:8},
   {id:"CP_PICK_20_5",  title:"到店满 20 减 5",  type:"full", channels:["pickup"],    threshold:20, amount:5},
-  {id:"CP_PICK_PCT85", title:"到店 8.5 折",     type:"percent", channels:["pickup"], threshold:25, rate:0.85, cap:15},
+  {id:"CP_PICK_PCT85", title:"到店 8.5 折（封顶 15）", type:"percent", channels:["pickup"], threshold:25, rate:0.85, cap:15},
   {id:"CP_DT_39_5",    title:"得来速满 39 减 5",type:"full", channels:["drivethru"], threshold:39, amount:5},
-  {id:"CP_ANY_15_3",   title:"全渠道满 15 减 3",type:"full", channels:["delivery","pickup","drivethru"], threshold:15, amount:3}
+  {id:"CP_ANY_15_3",   title:"全渠道满 15 减 3",type:"full", channels:["delivery","pickup","drivethru"], threshold:15, amount:3},
+  {id:"CP_PICK_NEW",   title:"到店新客减 5",    type:"full", channels:["pickup"],    threshold:25, amount:5}
 ];
 
 const CHANNELS = ["delivery","pickup","drivethru"];
 const LABEL = {delivery:"麦乐送（外送）", pickup:"到店取餐", drivethru:"得来速车道"};
 const SHORT = {delivery:"外送", pickup:"到店", drivethru:"得来速"};
+const COLOR = {delivery:"#DA291C", pickup:"#1A1614", drivethru:"#E0A800"};
 
-const CFG = {
-  deliveryFee: 9,
-  freeDeliveryAt: 39,
-  minOrder: 20,
-  packingFee: 0,
-  deliveryEta: 32,
-  walkMet: 3.5          // 慢走代谢当量，4.5 km/h
-};
+const CFG = {deliveryFee:9, freeDeliveryAt:39, minOrder:20, packingFee:0, deliveryEta:32, walkMet:3.5};
 
 const state = {
   cart: {"BURGER_MCHICKEN":1, "SIDE_FRIES_M":1},
-  wage: 45,
-  walk: 8,
-  drive: 6,
-  queue: 5,
-  weight: 60
+  wage: 45, walk: 8, queue: 5, weight: 60
 };
 
 const yuan = n => "¥" + n.toFixed(2);
@@ -335,92 +344,93 @@ const money = n => "¥" + n.toFixed(1);
 
 /* ============================== 核价引擎 ============================== */
 function itemsTotal(cart){
-  return Object.entries(cart).reduce((sum,[code,qty])=>{
-    const it = MENU.find(m => m.code === code);
-    return sum + (it ? it.price * qty : 0);
+  return Object.entries(cart).reduce((s,[code,qty])=>{
+    const it = MENU.find(m=>m.code===code);
+    return s + (it ? it.price*qty : 0);
   }, 0);
+}
+function cartNutrition(cart){
+  const t = {kcal:0,p:0,f:0,c:0,na:0,lines:[]};
+  Object.entries(cart).forEach(([code,qty])=>{
+    const it = MENU.find(m=>m.code===code);
+    if(!it) return;
+    t.kcal += it.kcal*qty; t.p += it.p*qty; t.f += it.f*qty;
+    t.c += it.c*qty; t.na += it.na*qty;
+    t.lines.push({item:it, qty});
+  });
+  return t;
 }
 
 function bestCoupon(channel, total, fee){
-  let best = {payable: null, coupon: null, saving: 0};
+  let best = {payable:null, coupon:null, saving:0};
   for(const cp of COUPONS){
     if(!cp.channels.includes(channel)) continue;
-    let payable, saving;
-    if(cp.type === "freedelivery"){
-      if(fee <= 0) continue;
-      payable = total + CFG.packingFee;
-      saving = fee;
-    }else{
-      if(total < (cp.threshold || 0)) continue;
-      let deduction;
-      if(cp.type === "full") deduction = Math.min(cp.amount, total);
-      else if(cp.type === "percent"){
-        deduction = total * (1 - cp.rate);
-        if(cp.cap) deduction = Math.min(deduction, cp.cap);
-      }else continue;
-      if(deduction <= 0) continue;
-      payable = total - deduction + fee + CFG.packingFee;
-      saving = deduction;
-    }
+    if(total < (cp.threshold||0)) continue;
+    let deduction;
+    if(cp.type === "full") deduction = Math.min(cp.amount, total);
+    else if(cp.type === "percent"){
+      deduction = total*(1-cp.rate);
+      if(cp.cap) deduction = Math.min(deduction, cp.cap);
+    } else continue;
+    if(deduction <= 0) continue;
+    const payable = total - deduction + fee + CFG.packingFee;
     if(best.payable === null || payable < best.payable - 1e-9){
-      best = {payable, coupon: cp, saving};
+      best = {payable, coupon:cp, saving:deduction};
     }
   }
   if(best.payable === null){
-    best = {payable: total + fee + CFG.packingFee, coupon: null, saving: 0};
+    best = {payable: total + fee + CFG.packingFee, coupon:null, saving:0};
   }
   return best;
-}
-
-function cartKcal(cart){
-  return Object.entries(cart).reduce((sum,[code,qty])=>{
-    const it = MENU.find(m => m.code === code);
-    return sum + (it ? it.kcal * qty : 0);
-  }, 0);
 }
 
 function quote(channel, cart){
   const total = itemsTotal(cart);
   const q = {channel, available:true, reason:"", total, fee:0, payable:0, saving:0,
-             coupon:null, active:0, kcal:cartKcal(cart), burned:0, net:0};
-  if(total <= 0){ q.available = false; q.reason = "还没选东西"; return q; }
+             coupon:null, active:0, burned:0};
+  if(total <= 0){ q.available=false; q.reason="还没选东西"; return q; }
 
   if(channel === "delivery"){
     if(total < CFG.minOrder){
       q.available = false;
-      q.reason = "未达外送起送价 " + yuan(CFG.minOrder) + "（还差 " + yuan(CFG.minOrder - total) + "）";
+      q.reason = "未达外送起送价 " + yuan(CFG.minOrder) + "（还差 " + yuan(CFG.minOrder-total) + "）";
       return q;
     }
     q.fee = total >= CFG.freeDeliveryAt ? 0 : CFG.deliveryFee;
   }
 
   const bc = bestCoupon(channel, total, q.fee);
-  q.payable = bc.payable;
-  q.coupon = bc.coupon;
-  q.saving = bc.saving;
+  q.payable = bc.payable; q.coupon = bc.coupon; q.saving = bc.saving;
 
-  if(channel === "delivery"){ q.active = 0; }
-  else if(channel === "pickup"){ q.active = state.walk * 2 + state.queue; }
-  else { q.active = state.drive * 2 + state.queue; }
+  if(channel === "delivery") q.active = 0;
+  else if(channel === "pickup") q.active = state.walk*2 + state.queue;
+  else q.active = Math.round(state.walk*2*0.6) + state.queue;   // 车道按步行的 60% 计车程
 
-  // 只有「走过去」才消耗热量；开车去车道和在家等，消耗一样
   const walkMin = channel === "pickup" ? Math.max(0, q.active - state.queue) : 0;
   q.burned = Math.round(CFG.walkMet * state.weight * walkMin / 60);
-  q.net = q.kcal - q.burned;
-
   return q;
 }
 
-function cost(q, wage){ return q.payable + q.active / 60 * wage; }
+const cost = (q,w) => q.payable + q.active/60*w;
+
+function pareto(valid){
+  return valid.filter(q => !valid.some(o =>
+    o !== q && o.payable <= q.payable+1e-9 && o.active <= q.active+1e-9 &&
+    (o.payable < q.payable-1e-9 || o.active < q.active-1e-9)
+  )).map(q=>q.channel);
+}
 
 /* ============================== 渲染 ============================== */
 function renderMenu(){
   const box = document.getElementById("menu");
   box.innerHTML = MENU.map(it=>{
     const qty = state.cart[it.code] || 0;
-    return `<div class="item ${qty?'':'out'}">
-      <div class="nm">${it.name}${it.note?`<small>${it.note}</small>`:""}</div>
-      <div class="pr">${money(it.price)}</div>
+    const thumb = it.img
+      ? `<img class="thumb" src="${it.img}" alt="${it.name}" loading="lazy">`
+      : `<div class="thumb mono">${it.name.charAt(0)}</div>`;
+    return `<div class="item ${qty?'':'off'}">
+      ${thumb}
+      <div class="nm">${it.name}<small>${yuan(it.price)} · ${it.kcal} 大卡</small></div>
       <div class="stepper">
         <button data-code="${it.code}" data-d="-1" ${qty?'':'disabled'} aria-label="减少">−</button>
         <div class="q ${qty?'on':''}">${qty}</div>
@@ -428,125 +438,215 @@ function renderMenu(){
       </div>
     </div>`;
   }).join("");
+
   box.querySelectorAll("button").forEach(b=>{
     b.addEventListener("click", ()=>{
       const code = b.dataset.code, d = Number(b.dataset.d);
-      const next = Math.max(0, (state.cart[code] || 0) + d);
+      const next = Math.max(0, (state.cart[code]||0) + d);
       if(next === 0) delete state.cart[code]; else state.cart[code] = next;
       render();
     });
   });
+
+  const n = Object.values(state.cart).reduce((a,b)=>a+b,0);
+  document.getElementById("cart-sum").textContent =
+    n ? `含 ${n} 件 · ${yuan(itemsTotal(state.cart))}` : "还没选";
+  document.getElementById("m-count").textContent = MENU.length + " 项";
+  document.getElementById("m-coupons").textContent = COUPONS.length + " 张 · 分渠道";
 }
 
-function renderVerdict(quotes, rec, breakevens){
+function renderVerdict(quotes, rec, bes){
   const el = document.getElementById("verdict");
-  const q = quotes.find(x=>x.channel === rec);
-  if(!q){ el.innerHTML = `<div class="tag">先选点什么</div><div class="big">空购物车</div>`; return; }
-
+  const q = quotes.find(x=>x.channel===rec);
+  if(!q){
+    el.innerHTML = `<div class="tag">综合成本最低</div>
+      <div class="big">先选点什么</div>
+      <div class="body">左侧勾选餐品后，这里会给出三路比价与裁决。</div>`;
+    return;
+  }
   let head, body;
-  if(breakevens.length){
-    const be = breakevens[0];
+  if(bes.length){
+    const be = bes[0];
     const worse = state.wage > be.wage;
-    head = worse
-      ? `别折腾，直接用 <span>${SHORT[be.faster]}</span>`
-      : `走一趟 <span>${SHORT[be.slower]}</span>，值`;
-    body = `${LABEL[be.slower]} 比 ${LABEL[be.faster]} 省 <b>${yuan(be.saving)}</b>，
-            但多花 <b>${be.extra} 分钟</b>。临界时薪 <b>${money(be.wage)}/小时</b>——
-            你的时间值 ${money(state.wage)}/小时，${worse?"省下的钱补不回时间":"省下的钱补得回时间"}。`;
+    head = worse ? `别折腾，直接用 <em>${SHORT[be.faster]}</em>`
+                 : `走一趟 <em>${SHORT[be.slower]}</em>，值`;
+    body = `${LABEL[be.slower]} 比 ${LABEL[be.faster]} 省 <b style="color:#fff">${yuan(be.saving)}</b>，
+            但要多花 <b style="color:#fff">${be.extra} 分钟</b>。临界时薪 <b style="color:#fff">${money(be.wage)}/小时</b>
+            —— 你的时间值 ${money(state.wage)}/小时，${worse?"省下的钱补不回时间":"省下的钱补得回时间"}。`;
   }else{
-    head = `直接选 <span>${SHORT[rec]}</span>`;
+    head = `直接选 <em>${SHORT[rec]}</em>`;
     body = `三条路里它的综合成本最低。`;
   }
-
   el.innerHTML = `
     <div class="tag">综合成本最低</div>
     <div class="big">${head}</div>
-    <p>推荐 <b style="color:#fff">${LABEL[rec]}</b>　到手价 ${yuan(q.payable)}　
-       综合成本 <b style="color:#FFC72C">${yuan(cost(q, state.wage))}</b></p>
-    <p>${body}</p>
-    <div class="formula">综合成本 = 到手价 + 主动时间/60 × 时薪　→　
-      ${yuan(q.payable)} + ${q.active}/60 × ${state.wage} = ${yuan(cost(q, state.wage))}</div>`;
+    <div class="meta">推荐 ${LABEL[rec]}<i>·</i>到手价 ${yuan(q.payable)}<i>·</i>综合成本 ${yuan(cost(q,state.wage))}</div>
+    <div class="body">${body}</div>
+    <div class="formula">综合成本 = 到手价 + 主动时间 ÷ 60 × 时薪　→　${yuan(q.payable)} + ${q.active} ÷ 60 × ${state.wage} = ${yuan(cost(q,state.wage))}</div>`;
 }
 
-function renderChans(quotes, rec){
+function renderChans(quotes, rec, kcal){
   const el = document.getElementById("chans");
+  const badges = {delivery:["red","推荐"], pickup:["soft","到手价最低"], drivethru:["gray","券池最瘦"]};
   el.innerHTML = quotes.map(q=>{
     if(!q.available){
       return `<div class="chan dead">
-        <div class="hd"><div class="nm">${LABEL[q.channel]}</div></div>
-        <div class="price" style="font-size:16px;color:#9C938D">不可用</div>
+        <div class="ch"><div class="nm">${LABEL[q.channel]}</div></div>
+        <div class="price na">不可用</div>
         <div class="why">${q.reason}</div>
       </div>`;
     }
     const win = q.channel === rec;
+    const b = badges[q.channel];
+    const net = kcal - q.burned;
     return `<div class="chan ${win?'win':''}">
-      <div class="hd">
-        <div class="nm">${LABEL[q.channel]}</div>
-        ${win?'<div class="badge">推荐</div>':''}
-      </div>
+      <div class="ch"><div class="nm">${LABEL[q.channel]}</div><span class="badge ${b[0]}">${b[1]}</span></div>
       <div class="price"><small>¥</small>${q.payable.toFixed(2)}</div>
-      <dl>
-        <dt>你要花的时间</dt><dd class="${q.active===0?'hl':''}">${q.active===0?"0（在家等）":q.active+" 分钟"}</dd>
-        <dt>综合成本</dt><dd class="${win?'hl':''}">${cost(q, state.wage).toFixed(2)}</dd>
-        <dt>用券</dt><dd>${q.coupon?q.coupon.title:"无券"}</dd>
-        <dt>配送费</dt><dd>${q.fee>0?yuan(q.fee):"—"}</dd>
-        <dt>净热量</dt><dd class="${q.burned>0?'hl':''}">${q.burned>0 ? q.net+" <span style='font-weight:400;color:#9C938D'>（−"+q.burned+"）</span>" : q.kcal} kcal</dd>
-      </dl>
+      <div class="metrics">
+        <div><dt>你要花的时间</dt><dd class="${q.active===0?'hl':''}">${q.active===0?"0 分钟":q.active+" 分钟"}</dd></div>
+        <div><dt>综合成本</dt><dd class="${win?'hl':''}">${cost(q,state.wage).toFixed(2)}</dd></div>
+        <div><dt>净热量</dt><dd class="${q.burned>0?'hl':''}">${net} kcal</dd></div>
+      </div>
     </div>`;
   }).join("");
 }
 
-function renderTable(quotes, rec){
-  const rows = quotes.map(q=>{
-    if(!q.available) return `<tr><td>${LABEL[q.channel]}</td><td colspan="7" style="text-align:left;color:#9C938D">${q.reason}</td></tr>`;
-    return `<tr>
-      <td class="${q.channel===rec?'win':''}">${LABEL[q.channel]}${q.channel===rec?" ★":""}</td>
-      <td>${yuan(q.total)}</td>
-      <td>${yuan(q.fee)}</td>
-      <td>${q.saving>0?"−"+yuan(q.saving).slice(1):"—"}</td>
-      <td class="${q.channel===rec?'win':''}">${yuan(q.payable)}</td>
-      <td>${q.active===0?"0":q.active} 分</td>
-      <td>${q.kcal}</td>
-      <td class="${q.burned>0?'win':''}">${q.burned>0?q.kcal+" − "+q.burned+" = "+q.net:q.net}</td>
-    </tr>`;
-  }).join("");
-  document.getElementById("table").innerHTML = `
-    <table>
-      <thead><tr><th>履约方式</th><th>商品金额</th><th>配送费</th><th>券抵扣</th><th>到手价</th><th>主动时间</th><th>摄入</th><th>净热量</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-function renderNutrition(quotes){
-  const box = document.getElementById("nutri");
-  const usable = quotes.filter(q=>q.available);
-  if(!usable.length){
-    box.innerHTML = `<p style="font-size:13px;color:#9C938D">先选点什么。</p>`;
+function renderChart(valid, rec){
+  const box = document.getElementById("chart");
+  if(!valid.length){
+    box.innerHTML = ""; document.getElementById("legend").innerHTML = "";
+    document.getElementById("chart-note").textContent = "";
     return;
   }
-  const intake = usable[0].kcal;
-  const pickup = usable.find(q=>q.channel === "pickup");
-  let html = `<p style="font-size:13px;color:#6B625C;line-height:1.75">
-    这单摄入约 <b>${intake} 大卡</b>。三条路的餐是同一份，热量当然一样——
-    但<b>走过去会消耗，坐着等不会</b>。</p>`;
-  if(pickup && pickup.burned > 0){
-    const share = Math.round(pickup.burned / intake * 100);
-    html += `<p style="font-size:13px;color:#6B625C;line-height:1.75;margin-top:8px">
-      走去 <b>到店取餐</b> 往返 ${pickup.active} 分钟，按 ${state.weight} kg 估算消耗
-      <b style="color:#DA291C">${pickup.burned} 大卡</b>，净摄入降到 <b>${pickup.net} 大卡</b>
-      —— 抵掉这单的 ${share}%。</p>`;
+
+  const W = 640, H = 200, P = {l:56, r:44, t:16, b:36};
+  const iw = W-P.l-P.r, ih = H-P.t-P.b;
+  const maxT = Math.max(24, Math.ceil(Math.max(...valid.map(q=>q.active))/6)*6);
+  const prices = valid.map(q=>q.payable);
+  const lo = Math.min(...prices)-3, hi = Math.max(...prices)+3;
+  const X = t => P.l + (t/maxT)*iw;
+  const Y = p => P.t + ih - ((p-lo)/(hi-lo))*ih;
+
+  let grid = "";
+  for(let i=0;i<=4;i++){
+    const y = P.t + ih*i/4;
+    grid += `<line x1="${P.l}" y1="${y}" x2="${P.l+iw}" y2="${y}" stroke="#F0EAE4" stroke-width="1"/>`;
+    grid += `<text x="${P.l-6}" y="${y+3.5}" text-anchor="end" font-size="10" fill="#9C938D">${(hi-(hi-lo)*i/4).toFixed(0)}</text>`;
   }
-  html += `<p style="font-size:12px;color:#9C938D;line-height:1.65;margin-top:10px">
-    外送和得来速全程坐着，净摄入等于摄入量。热量取自麦当劳官方营养数据，套餐为各组成项加总估算。
-    这里只做「摄入 vs 消耗」的收支对照，不构成营养或医疗建议。</p>`;
-  box.innerHTML = html;
+  for(let i=0;i<=4;i++){
+    const x = P.l + iw*i/4;
+    grid += `<line x1="${x}" y1="${P.t}" x2="${x}" y2="${P.t+ih}" stroke="#F0EAE4" stroke-width="1"/>`;
+    grid += `<text x="${x}" y="${P.t+ih+16}" text-anchor="middle" font-size="10" fill="#9C938D">${(maxT*i/4).toFixed(0)}</text>`;
+  }
+
+  const dots = valid.map(q=>{
+    const r = q.channel===rec ? 7 : 5.5;
+    return `<circle cx="${X(q.active)}" cy="${Y(q.payable)}" r="${r}" fill="${COLOR[q.channel]}" stroke="#fff" stroke-width="2.5"/>`;
+  }).join("");
+
+  box.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="价格与时间的散点图">
+    ${grid}
+    <text x="${P.l}" y="${H-4}" font-size="10" fill="#9C938D">你必须亲自花掉的时间（分钟）</text>
+    ${dots}
+  </svg>`;
+
+  document.getElementById("legend").innerHTML = valid.map(q=>
+    `<span><i style="background:${COLOR[q.channel]}"></i>${LABEL[q.channel]}${q.channel===rec?" · 推荐":""}</span>`
+  ).join("");
+
+  const front = pareto(valid);
+  document.getElementById("chart-note").textContent =
+    "横轴是你必须亲自花掉的时间，纵轴是到手价。" +
+    (front.length === valid.length
+      ? "三个点都在帕累托前沿上，没有哪条路能「既更便宜又更省时间」——决策只能交给你的时薪。"
+      : front.map(c=>LABEL[c]).join("、") + " 在前沿上；其余路线被支配，无论时薪多少都不会是最优解。");
+}
+
+function renderBreakEven(bes){
+  const el = document.getElementById("be");
+  const sc = document.getElementById("scale");
+  if(!bes.length){
+    el.innerHTML = `<div class="empty">三条路里没有「便宜但更慢」的对比，不需要用时间换钱。</div>`;
+    sc.innerHTML = "";
+    return;
+  }
+  el.innerHTML = bes.map(be=>{
+    const hl = state.wage > be.wage;
+    return `<div class="be">
+      <div><div class="pair">${LABEL[be.slower]} 与 ${LABEL[be.faster]}</div>
+      <div class="detail">省 ${yuan(be.saving)} · 多花 ${be.extra} 分钟</div></div>
+      <div class="val ${hl?'hl':''}">${money(be.wage)}/h</div>
+    </div>`;
+  }).join("");
+
+  const be = bes[0];
+  const domain = Math.max(80, Math.ceil((be.wage+20)/20)*20);
+  const p = v => Math.min(100, Math.max(0, v/domain*100));
+  sc.innerHTML = `<div class="scale">
+    <div class="track">
+      <div class="fill" style="width:${p(be.wage)}%"></div>
+      <div class="mark" style="left:${p(state.wage)}%"></div>
+    </div>
+    <div class="cap">红线是临界时薪 ${money(be.wage)}/h，黑点是你的 ${money(state.wage)}/h——${
+      state.wage > be.wage ? "你在红线右侧，所以别折腾" : "你在红线左侧，走一趟划算"}</div>
+  </div>`;
+}
+
+function renderNutrition(cart){
+  const el = document.getElementById("nutrition");
+  const t = cartNutrition(cart);
+  if(!t.lines.length){
+    el.innerHTML = `<div class="empty">还没选东西。</div>`;
+    return;
+  }
+  const rows = t.lines.map(({item,qty})=>{
+    const photo = item.img
+      ? `<img src="${item.img}" alt="${item.name}" loading="lazy">`
+      : `<div class="mono-lg">${item.name.charAt(0)}</div>`;
+    return `<div class="nrow">
+      ${photo}
+      <div class="info">
+        <strong>${item.name}${qty>1?" × "+qty:""}</strong>
+        <span>蛋白 ${item.p*qty}g · 脂肪 ${item.f*qty}g · 碳水 ${item.c*qty}g</span>
+      </div>
+      <div class="k"><b>${item.kcal*qty}</b><span>大卡</span></div>
+    </div>`;
+  }).join("");
+
+  el.innerHTML = rows + `
+    <div class="macro-label">合计（这一单）</div>
+    <dl class="macro">
+      <div><dt>蛋白质</dt><dd>${t.p} g</dd></div>
+      <div><dt>脂肪</dt><dd>${t.f} g</dd></div>
+      <div><dt>碳水</dt><dd>${t.c} g</dd></div>
+      <div><dt>钠</dt><dd class="${t.na>2000?'over':''}">${t.na} mg</dd></div>
+    </dl>`;
+}
+
+function renderHeat(quotes, t){
+  const el = document.getElementById("heat");
+  if(!t.kcal){ el.innerHTML = `<div class="empty">还没选东西。</div>`; return; }
+  const pick = quotes.find(q=>q.channel==="pickup" && q.available);
+  let accent = "";
+  if(pick && pick.burned>0){
+    const share = Math.round(pick.burned/t.kcal*100);
+    accent = `<div class="accent"><i></i><p>走去到店取餐往返 ${pick.active} 分钟，按 ${state.weight} kg 估算消耗
+      <b>${pick.burned} 大卡</b>，净摄入降到 <b>${t.kcal-pick.burned} 大卡</b>——抵掉这单的 ${share}%。</p></div>`;
+  }
+  el.innerHTML = `<p class="lead">这单摄入约 <b>${t.kcal} 大卡</b>。三条路的餐是同一份，摄入当然一样——但走过去会消耗，坐着等不会。</p>
+    ${accent}
+    <p class="sub-note">外送和得来速全程坐着，净摄入等于摄入量。热量取自麦当劳官方营养数据，套餐为各组成项加总估算。这里只做「摄入 vs 消耗」的收支对照，不构成营养建议。</p>`;
 }
 
 function renderTopup(cart){
   const box = document.getElementById("topup");
   const base = quote("delivery", cart);
-  if(!base.available || base.fee <= 0){
-    box.innerHTML = `<p style="font-size:13px;color:#9C938D">${base.available?"这单已经免配送费了，不需要凑。"+"：当前到手价 "+yuan(base.payable):base.reason}</p>`;
+  if(!base.available){
+    box.innerHTML = `<p>${base.reason}，这一项不适用。</p>`;
+    return;
+  }
+  if(base.fee <= 0){
+    box.innerHTML = `<p>这单已经免配送费了（商品金额 ${yuan(base.total)} ≥ ${yuan(CFG.freeDeliveryAt)}），不需要凑。</p>`;
     return;
   }
   const gap = CFG.freeDeliveryAt - base.total;
@@ -557,116 +657,53 @@ function renderTopup(cart){
     if(it.price >= gap && (!cheapest || it.price < cheapest.price)) cheapest = it;
   }
   if(!cheapest){
-    box.innerHTML = `<p style="font-size:13px;color:#9C938D">差 ${yuan(gap)} 到免配送门槛，但菜单里没有合适的小额加购品。</p>`;
+    box.innerHTML = `<p>差 ${yuan(gap)} 到免配送门槛，但菜单里没有合适的小额加购品。</p>`;
     return;
   }
-  const trial = Object.assign({}, cart);
-  trial[cheapest.code] = 1;
+  const trial = Object.assign({}, cart); trial[cheapest.code] = 1;
   const after = quote("delivery", trial);
   const marginal = after.payable - base.payable;
   let verdict;
   if(marginal <= 0.01){
-    verdict = `<b style="color:#DA291C">加购后到手价反而更低</b>，等于白得一份还省 ${yuan(-marginal)}。`;
+    verdict = `<b>加购后到手价反而更低</b>，等于白得一份还省 ${yuan(-marginal)}。`;
   }else if(marginal < cheapest.price - 0.01){
-    const pct = (marginal / cheapest.price * 10).toFixed(1);
-    verdict = `实际只多付 <b>${yuan(marginal)}</b> 就拿到它 —— 因为顺手把 <b>${yuan(base.fee)}</b> 配送费省掉了，相当于 <b>${pct} 折</b>。`;
+    verdict = `实际只多付 <b>${yuan(marginal)}</b> 就拿到它——因为顺手把 ${yuan(base.fee)} 配送费省掉了，相当于 <b>${(marginal/cheapest.price*10).toFixed(1)} 折</b>。`;
   }else{
-    verdict = `要多付 ${yuan(marginal)}，等于按原价买，没必要为了凑单而凑。`;
+    verdict = `要多付 ${yuan(marginal)}，等于按原价买，没必要为了凑而凑。`;
   }
-  box.innerHTML = `<p style="font-size:13px;color:#6B625C;line-height:1.7">
-    当前这单 ${yuan(base.total)}，差 <b>${yuan(gap)}</b> 够不到 ${yuan(CFG.freeDeliveryAt)} 免配送门槛，所以被收了 <b>${yuan(base.fee)}</b> 配送费。<br>
-    再加一份 <b>${cheapest.name}</b>（原价 ${money(cheapest.price)}）后，到手价 ${yuan(base.payable)} → <b>${yuan(after.payable)}</b>，
-    ${verdict}<br>
-    <span style="color:#9C938D">代价是多摄入 <b>${cheapest.kcal} 大卡</b>。</span>
-  </p>`;
-}
-
-function renderChart(quotes){
-  const valid = quotes.filter(q=>q.available);
-  if(!valid.length){ document.getElementById("chart").innerHTML = ""; return; }
-
-  const W = 640, H = 300, P = {l:52, r:24, t:20, b:44};
-  const iw = W - P.l - P.r, ih = H - P.t - P.b;
-
-  const maxT = Math.max(30, ...valid.map(q=>q.active)) * 1.15;
-  const prices = valid.map(q=>q.payable);
-  const minP = Math.min(...prices), maxP = Math.max(...prices);
-  const padP = Math.max(3, (maxP - minP) * 0.45);
-  const loP = minP - padP, hiP = maxP + padP;
-
-  const X = t => P.l + (t / maxT) * iw;
-  const Y = p => P.t + ih - ((p - loP) / (hiP - loP)) * ih;
-
-  // 网格
-  let grid = "";
-  for(let i=0;i<=4;i++){
-    const y = P.t + ih * i / 4;
-    const val = hiP + (loP - hiP) * i / 4;
-    grid += `<line x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}" stroke="#F0EAE4" stroke-width="1"/>`;
-    grid += `<text x="${P.l-8}" y="${y+4}" text-anchor="end" font-size="10" fill="#9C938D">${val.toFixed(0)}</text>`;
-  }
-  for(let i=0;i<=4;i++){
-    const x = P.l + iw * i / 4;
-    grid += `<line x1="${x}" y1="${P.t}" x2="${x}" y2="${P.t+ih}" stroke="#F0EAE4" stroke-width="1"/>`;
-    grid += `<text x="${x}" y="${H-P.b+16}" text-anchor="middle" font-size="10" fill="#9C938D">${(maxT*i/4).toFixed(0)}</text>`;
-  }
-
-  const front = pareto(valid);
-  const pts = valid.map(q=>{
-    const x = X(q.active), y = Y(q.payable);
-    const onFront = front.includes(q.channel);
-    const isRec = q.channel === rec;
-    const fill = isRec ? "#DA291C" : onFront ? "#1A1614" : "#C9C0BA";
-    const r = isRec ? 8 : 6;
-    const anchor = x > W - 110 ? "end" : "start";
-    const dx = anchor === "end" ? -12 : 12;
-    return `<circle cx="${x}" cy="${y}" r="${r}" fill="${fill}" stroke="#fff" stroke-width="2.5"/>
-      <text x="${x+dx}" y="${y+4}" text-anchor="${anchor}" font-size="11" font-weight="600" fill="${isRec?'#DA291C':'#6B625C'}">${SHORT[q.channel]}</text>
-      <text x="${x+dx}" y="${y+17}" text-anchor="${anchor}" font-size="10" fill="#9C938D">${yuan(q.payable)}</text>`;
-  }).join("");
-
-  document.getElementById("chart").innerHTML = `
-  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="价格与时间的散点图">
-    ${grid}
-    <text x="${P.l + iw/2}" y="${H-6}" text-anchor="middle" font-size="10.5" fill="#9C938D">你必须亲自花掉的时间（分钟）</text>
-    <text x="14" y="${P.t + ih/2}" text-anchor="middle" font-size="10.5" fill="#9C938D" transform="rotate(-90 14 ${P.t + ih/2})">到手价（元）</text>
-    ${pts}
-  </svg>`;
-}
-
-function pareto(valid){
-  return valid.filter(q=>!valid.some(o=>o!==q && o.payable<=q.payable+1e-9 && o.active<=q.active+1e-9
-      && (o.payable<q.payable-1e-9 || o.active<q.active-1e-9))).map(q=>q.channel);
+  box.innerHTML = `<p>还差 <b>${yuan(gap)}</b> 到 ${yuan(CFG.freeDeliveryAt)} 免配送门槛（当前被收 ${yuan(base.fee)} 配送费）。
+    再加一份 <b>${cheapest.name}</b>（原价 ${money(cheapest.price)}）后，到手价 ${yuan(base.payable)} → <b>${yuan(after.payable)}</b>，${verdict}</p>
+    <p class="warn">代价是多摄入 ${cheapest.kcal} 大卡。</p>`;
 }
 
 let rec = "delivery";
 function render(){
+  const t = cartNutrition(state.cart);
   const quotes = CHANNELS.map(ch=>quote(ch, state.cart));
   const valid = quotes.filter(q=>q.available);
-  rec = valid.length ? valid.reduce((a,b)=>cost(a,state.wage)<=cost(b,state.wage)?a:b).channel : "";
+  rec = valid.length ? valid.reduce((a,b)=> cost(a,state.wage) <= cost(b,state.wage) ? a : b).channel : "";
 
-  const breakevens = [];
+  const bes = [];
   for(const slow of valid){
     for(const fast of valid){
       if(slow.active <= fast.active + 1e-9) continue;
       if(slow.payable >= fast.payable - 1e-9) continue;
-      const dt = (slow.active - fast.active) / 60;
-      breakevens.push({
-        slower: slow.channel, faster: fast.channel,
-        saving: fast.payable - slow.payable,
-        extra: Math.round(slow.active - fast.active),
-        wage: (fast.payable - slow.payable) / dt
-      });
+      const dt = (slow.active - fast.active)/60;
+      bes.push({slower:slow.channel, faster:fast.channel,
+                saving: fast.payable - slow.payable,
+                extra: Math.round(slow.active - fast.active),
+                wage: (fast.payable - slow.payable)/dt});
     }
   }
-  breakevens.sort((a,b)=>b.saving-a.saving);
+  bes.sort((a,b)=> b.saving - a.saving);
 
   renderMenu();
-  renderVerdict(quotes, rec, breakevens);
-  renderChans(quotes, rec);
-  renderTable(quotes, rec);
-  renderChart(quotes);
-  renderNutrition(quotes);
+  renderVerdict(quotes, rec, bes);
+  renderChans(quotes, rec, t.kcal);
+  renderChart(valid, rec);
+  renderBreakEven(bes);
+  renderNutrition(state.cart);
+  renderHeat(quotes, t);
   renderTopup(state.cart);
 }
 
@@ -677,8 +714,7 @@ function bindSlider(id, key, fmt){
   const sync = ()=>{ out.textContent = fmt(Number(el.value)); };
   el.addEventListener("input", ()=>{
     state[key] = Number(el.value);
-    sync();
-    render();
+    sync(); render();
   });
   state[key] = Number(el.value);
   sync();
@@ -686,9 +722,8 @@ function bindSlider(id, key, fmt){
 
 bindSlider("wage", "wage", v=>"¥"+v+"/h");
 bindSlider("walk", "walk", v=>v+" 分钟");
-bindSlider("drive", "drive", v=>v+" 分钟");
-bindSlider("queue", "queue", v=>v+" 分钟");
 bindSlider("weight", "weight", v=>v+" kg");
+bindSlider("queue", "queue", v=>v+" 分钟");
 
 render();
 </script>
