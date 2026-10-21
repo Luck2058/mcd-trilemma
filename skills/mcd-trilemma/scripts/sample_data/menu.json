@@ -1,0 +1,72 @@
+{
+  "_note": "脱敏样例数据，仅用于离线演示与自测。真实项目运行请用 --live 走麦当劳 MCP 实时返回。价格与券面为合理近似，不代表麦当劳官方报价。",
+  "items": [
+    { "code": "BURGER_BIGMAC",   "name": "巨无霸",           "price": 25.5 },
+    { "code": "BURGER_MCHICKEN", "name": "麦辣鸡腿堡",       "price": 25.0 },
+    { "code": "BURGER_GRILL",    "name": "板烧鸡腿堡",       "price": 24.5 },
+    { "code": "BURGER_DOUBLE",   "name": "双层吉士汉堡",     "price": 19.5 },
+    { "code": "COMBO_BIGMAC",    "name": "巨无霸套餐（中）",  "price": 36.5 },
+    { "code": "COMBO_MCHICKEN",  "name": "麦辣鸡腿堡套餐（中）","price": 36.0 },
+    { "code": "SIDE_FRIES_M",    "name": "中薯条",           "price": 11.5 },
+    { "code": "SIDE_FRIES_L",    "name": "大薯条",           "price": 13.5 },
+    { "code": "SIDE_NUGGETS_5",  "name": "麦乐鸡（5块）",     "price": 13.0 },
+    { "code": "SIDE_WINGS_2",    "name": "麦辣鸡翅（2块）",   "price": 13.5 },
+    { "code": "DRINK_COKE_M",    "name": "可口可乐（中）",    "price": 9.0 },
+    { "code": "DRINK_COKE_L",    "name": "可口可乐（大）",    "price": 10.0 },
+    { "code": "DESSERT_MCFLURRY","name": "麦旋风",           "price": 12.5 },
+    { "code": "DESSERT_PIE",     "name": "香芋派",           "price": 8.0 },
+    { "code": "MCCOFE_LATTE",    "name": "麦咖啡拿铁（中）",  "price": 15.0 },
+    { "code": "BREAKFAST_MUFFIN","name": "猪柳蛋麦满分",     "price": 15.0, "channels": ["pickup", "drivethru"] }
+  ],
+  "coupons": [
+    {
+      "id": "CP_DLV_49_10",
+      "title": "外送满 49 减 10",
+      "type": "full_reduction",
+      "channels": ["delivery"],
+      "threshold": 49.0,
+      "amount": 10.0
+    },
+    {
+      "id": "CP_PICK_30_8",
+      "title": "到店满 30 减 8",
+      "type": "full_reduction",
+      "channels": ["pickup"],
+      "threshold": 30.0,
+      "amount": 8.0
+    },
+    {
+      "id": "CP_PICK_20_5",
+      "title": "到店满 20 减 5",
+      "type": "full_reduction",
+      "channels": ["pickup"],
+      "threshold": 20.0,
+      "amount": 5.0
+    },
+    {
+      "id": "CP_PICK_PCT85",
+      "title": "到店 8.5 折（满 25 可用，最高减 15）",
+      "type": "percent",
+      "channels": ["pickup"],
+      "threshold": 25.0,
+      "rate": 0.85,
+      "cap": 15.0
+    },
+    {
+      "id": "CP_DT_39_5",
+      "title": "得来速满 39 减 5",
+      "type": "full_reduction",
+      "channels": ["drivethru"],
+      "threshold": 39.0,
+      "amount": 5.0
+    },
+    {
+      "id": "CP_ANY_15_3",
+      "title": "全渠道满 15 减 3",
+      "type": "full_reduction",
+      "channels": ["delivery", "pickup", "drivethru"],
+      "threshold": 15.0,
+      "amount": 3.0
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  selftest:
+    name: 离线自测（30 项断言）
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: 运行自测
+        working-directory: skills/mcd-trilemma/scripts
+        run: python selftest.py
+
+      - name: 跑一遍离线比价（冒烟）
+        working-directory: skills/mcd-trilemma/scripts
+        run: python trilemma.py --offline --json > /dev/null
+
+  docs-check:
+    name: 交付文件完整性
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 检查活动要求的必备文件
+        run: |
+          set -e
+          for f in README.md CONTEST_DECLARATION.md MCP_INTEGRATION.md mcp-config.example.json; do
+            if [ ! -f "$f" ]; then echo "缺少必备文件：$f"; exit 1; fi
+            echo "OK  $f"
+          done
+
+      - name: 检查配置示例中不含真实凭证
+        run: |
+          set -e
+          if grep -Eq '"Authorization": *"Bearer [A-Za-z0-9]' mcp-config.example.json; then
+            echo "mcp-config.example.json 疑似包含真实 Token"; exit 1
+          fi
+          echo "OK  配置示例仅含环境变量占位符"
+
+      - name: 检查参赛声明与官方原文一致
+        run: |
+          set -e
+          curl -fsSL https://raw.githubusercontent.com/M-China/mcd-developer-innovation-challenge/main/CONTEST_DECLARATION.md -o /tmp/official.md
+          if ! diff -q /tmp/official.md CONTEST_DECLARATION.md > /dev/null; then
+            echo "CONTEST_DECLARATION.md 与官方原文不一致（该文件内容不可改动）"; exit 1
+          fi
+          echo "OK  参赛声明与官方原文一致"

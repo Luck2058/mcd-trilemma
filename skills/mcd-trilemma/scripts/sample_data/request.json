@@ -1,0 +1,15 @@
+{
+  "_note": "示例请求：一份麦辣鸡腿堡 + 中薯条。总额 36.5，差 2.5 元够不到外送免配送门槛，于是被收 9 元配送费——这正是三路比价最容易踩的坑。",
+  "wagePerHour": 45,
+  "address": "上海市徐汇区漕溪北路 398 号",
+  "fulfillment": {
+    "walkMinutes": 8,
+    "driveMinutes": 6,
+    "queueMinutes": 5,
+    "deliveryEtaMinutes": 32
+  },
+  "cart": [
+    { "code": "BURGER_MCHICKEN", "qty": 1 },
+    { "code": "SIDE_FRIES_M", "qty": 1 }
+  ]
+}

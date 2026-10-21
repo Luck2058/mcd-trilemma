@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="1200" height="720" font-family="PingFang SC, Microsoft YaHei, -apple-system, sans-serif">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#C9C0BA"/>
+    </marker>
+    <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#DA291C"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="720" fill="#FBF8F4"/>
+
+  <!-- 标题 -->
+  <rect x="40" y="40" width="22" height="4" rx="2" fill="#FFC72C"/>
+  <text x="74" y="50" font-size="12" font-weight="700" fill="#DA291C" letter-spacing="2">MCD-TRILEMMA · 核价流程</text>
+  <text x="40" y="92" font-size="27" font-weight="800" fill="#1A1614">三条路各核一次价，再用时间成本做裁决</text>
+  <text x="40" y="120" font-size="13.5" fill="#6B625C">到手价一律以 calculate-price 的返回为准 —— 不在本地重算优惠，只负责枚举「用哪张券」</text>
+
+  <!-- 左侧输入 -->
+  <rect x="40" y="160" width="180" height="96" rx="12" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <text x="58" y="186" font-size="11" font-weight="700" fill="#9C938D" letter-spacing="1">输入 ①</text>
+  <text x="58" y="210" font-size="15" font-weight="700" fill="#1A1614">一单饭</text>
+  <text x="58" y="232" font-size="12" fill="#6B625C">餐品编码 × 数量</text>
+
+  <rect x="40" y="272" width="180" height="96" rx="12" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <text x="58" y="298" font-size="11" font-weight="700" fill="#9C938D" letter-spacing="1">输入 ②</text>
+  <text x="58" y="322" font-size="15" font-weight="700" fill="#1A1614">你的时薪</text>
+  <text x="58" y="344" font-size="12" fill="#6B625C">时间的机会成本</text>
+
+  <rect x="40" y="384" width="180" height="96" rx="12" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <text x="58" y="410" font-size="11" font-weight="700" fill="#9C938D" letter-spacing="1">输入 ③</text>
+  <text x="58" y="434" font-size="15" font-weight="700" fill="#1A1614">步行 / 车程 / 排队</text>
+  <text x="58" y="456" font-size="12" fill="#6B625C">决定时间成本</text>
+
+  <!-- 三条泳道 -->
+  <!-- 外送 -->
+  <rect x="256" y="148" width="560" height="108" rx="14" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <rect x="256" y="148" width="6" height="108" fill="#DA291C"/>
+  <text x="280" y="180" font-size="15" font-weight="800" fill="#1A1614">麦乐送（外送）</text>
+  <text x="280" y="202" font-size="11.5" fill="#6B625C">delivery-query-addresses · delivery-query-stores</text>
+  <text x="280" y="222" font-size="11.5" fill="#6B625C">query-meals · available-coupons · calculate-price</text>
+  <rect x="280" y="232" width="86" height="18" rx="9" fill="#FDEDEA"/>
+  <text x="323" y="245" font-size="10.5" font-weight="700" fill="#DA291C" text-anchor="middle">外送券池</text>
+  <rect x="374" y="232" width="86" height="18" rx="9" fill="#F3EEE8"/>
+  <text x="417" y="245" font-size="10.5" font-weight="700" fill="#6B625C" text-anchor="middle">配送费 9 元</text>
+
+  <!-- 到店 -->
+  <rect x="256" y="272" width="560" height="108" rx="14" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <rect x="256" y="272" width="6" height="108" fill="#1A1614"/>
+  <text x="280" y="304" font-size="15" font-weight="800" fill="#1A1614">到店取餐</text>
+  <text x="280" y="326" font-size="11.5" fill="#6B625C">query-nearby-stores · query-meals</text>
+  <text x="280" y="346" font-size="11.5" fill="#6B625C">query-store-coupons · calculate-price</text>
+  <rect x="280" y="356" width="86" height="18" rx="9" fill="#FDEDEA"/>
+  <text x="323" y="369" font-size="10.5" font-weight="700" fill="#DA291C" text-anchor="middle">到店券池更肥</text>
+  <rect x="374" y="356" width="86" height="18" rx="9" fill="#F3EEE8"/>
+  <text x="417" y="369" font-size="10.5" font-weight="700" fill="#6B625C" text-anchor="middle">无配送费</text>
+
+  <!-- 得来速 -->
+  <rect x="256" y="396" width="560" height="108" rx="14" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <rect x="256" y="396" width="6" height="108" fill="#FFC72C"/>
+  <text x="280" y="428" font-size="15" font-weight="800" fill="#1A1614">得来速车道</text>
+  <text x="280" y="450" font-size="11.5" fill="#6B625C">query-nearby-stores（过滤车道门店）· query-meals</text>
+  <text x="280" y="470" font-size="11.5" fill="#6B625C">query-store-coupons · calculate-price</text>
+  <rect x="280" y="480" width="86" height="18" rx="9" fill="#F3EEE8"/>
+  <text x="323" y="493" font-size="10.5" font-weight="700" fill="#6B625C" text-anchor="middle">车道券池最瘦</text>
+  <rect x="374" y="480" width="86" height="18" rx="9" fill="#F3EEE8"/>
+  <text x="417" y="493" font-size="10.5" font-weight="700" fill="#6B625C" text-anchor="middle">门店覆盖最少</text>
+
+  <!-- 箭头：左 -> 泳道 -->
+  <path d="M222 208 H250" stroke="#C9C0BA" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M222 320 H250" stroke="#C9C0BA" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M222 432 H250" stroke="#C9C0BA" stroke-width="1.5" marker-end="url(#ar)"/>
+  <!-- 泳道 -> 右 -->
+  <path d="M818 202 H868" stroke="#DA291C" stroke-width="1.8" marker-end="url(#ar2)"/>
+  <path d="M818 326 H868" stroke="#DA291C" stroke-width="1.8" marker-end="url(#ar2)"/>
+  <path d="M818 450 H868" stroke="#DA291C" stroke-width="1.8" marker-end="url(#ar2)"/>
+
+  <!-- 右侧结果 -->
+  <rect x="874" y="148" width="286" height="356" rx="14" fill="#1A1614"/>
+  <text x="898" y="180" font-size="11" font-weight="700" fill="#FFC72C" letter-spacing="1.5">输出 ① 到手价 P</text>
+  <text x="898" y="212" font-size="13" fill="#C9C0BA">外送</text>
+  <text x="1136" y="212" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="end">¥42.50</text>
+  <text x="898" y="240" font-size="13" fill="#C9C0BA">到店</text>
+  <text x="1136" y="240" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="end">¥28.50</text>
+  <text x="898" y="268" font-size="13" fill="#C9C0BA">得来速</text>
+  <text x="1136" y="268" font-size="15" font-weight="700" fill="#FFFFFF" text-anchor="end">¥33.50</text>
+
+  <line x1="898" y1="292" x2="1136" y2="292" stroke="#3A302B" stroke-width="1"/>
+
+  <text x="898" y="322" font-size="11" font-weight="700" fill="#FFC72C" letter-spacing="1.5">输出 ② 主动时间 T</text>
+  <text x="898" y="350" font-size="13" fill="#C9C0BA">外送</text>
+  <text x="1136" y="350" font-size="13" fill="#FFFFFF" text-anchor="end">0 分钟（在家等）</text>
+  <text x="898" y="376" font-size="13" fill="#C9C0BA">到店</text>
+  <text x="1136" y="376" font-size="13" fill="#FFFFFF" text-anchor="end">21 分钟</text>
+  <text x="898" y="402" font-size="13" fill="#C9C0BA">得来速</text>
+  <text x="1136" y="402" font-size="13" fill="#FFFFFF" text-anchor="end">17 分钟</text>
+
+  <line x1="898" y1="424" x2="1136" y2="424" stroke="#3A302B" stroke-width="1"/>
+
+  <text x="898" y="452" font-size="11" font-weight="700" fill="#FFC72C" letter-spacing="1.5">输出 ③ 综合成本</text>
+  <text x="898" y="478" font-size="12" fill="#C9C0BA">= 到手价 + T/60 × 时薪</text>
+
+  <!-- 底部裁决 -->
+  <rect x="40" y="540" width="1120" height="120" rx="14" fill="#FFFFFF" stroke="#EDE6DF"/>
+  <rect x="40" y="540" width="6" height="120" fill="#DA291C"/>
+  <text x="66" y="572" font-size="12" font-weight="700" fill="#9C938D" letter-spacing="1.5">裁决：临界时薪</text>
+  <text x="66" y="606" font-size="19" font-weight="800" fill="#1A1614">临界时薪 ＝ 省下的钱 × 60 ÷ 多花的时间</text>
+  <text x="66" y="636" font-size="13" fill="#6B625C">到店比外送省 ¥14.00，多花 21 分钟 → 临界时薪 ¥40.0/小时</text>
+
+  <rect x="700" y="576" width="200" height="66" rx="10" fill="#FBF8F4" stroke="#EDE6DF"/>
+  <text x="718" y="602" font-size="11.5" font-weight="700" fill="#6B625C">你的时薪 &lt; ¥40</text>
+  <text x="718" y="626" font-size="13.5" font-weight="700" fill="#1A1614">走一趟，省钱划算</text>
+
+  <rect x="920" y="576" width="200" height="66" rx="10" fill="#FDEDEA" stroke="#F3C7C1"/>
+  <text x="938" y="602" font-size="11.5" font-weight="700" fill="#DA291C">你的时薪 &gt; ¥40</text>
+  <text x="938" y="626" font-size="13.5" font-weight="700" fill="#DA291C">别折腾，直接用外送</text>
+
+  <text x="40" y="700" font-size="11.5" fill="#9C938D">麦门三路比价器 · mcd-trilemma ｜ 麦当劳程序员创意开发大赛参赛作品，非麦当劳官方产品 ｜ 图中价格为脱敏样例数据</text>
+</svg>

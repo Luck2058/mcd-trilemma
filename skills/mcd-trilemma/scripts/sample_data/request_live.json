@@ -1,0 +1,15 @@
+{
+  "_note": "实时核价示例：用真实门店菜单里的餐品编码。换门店/城市时先用 --search 查编码。",
+  "wagePerHour": 45,
+  "city": "成都",
+  "keyword": "麦当劳",
+  "fulfillment": {
+    "driveMinutes": 8,
+    "queueMinutes": 5,
+    "deliveryEtaMinutes": 32
+  },
+  "cart": [
+    { "code": "1440", "qty": 1 },
+    { "code": "4810", "qty": 1 }
+  ]
+}
